@@ -1,0 +1,5 @@
+switch("d", "futharkgen")
+switch("d", "useFuthark")
+switch("d", "futharkRebuild")
+switch("d", "opirRebuild")
+switch("d", "nodeclguards")

@@ -1,6 +1,5 @@
 import std/strutils
 import std/os
-import futhark
 
 func futharkRenameCallback*(name: string; kind: string; partof: string): string =
   result = name
@@ -15,13 +14,17 @@ const libgpiodPath = currentSourcePath.parentDir / ".." / ".." / "build" / "libg
 
 {.passL: libgpiodPath / "lib" / "libgpiod.a".}
 
-importc:
-  outputPath currentSourcePath.parentDir / "futhark_libgpiod.nim"
+when defined(nimcheck) or not defined(futharkgen):
+  include ./futhark_libgpiod
+else:
+  import futhark
+  importc:
+    outputPath currentSourcePath.parentDir / "futhark_libgpiod.nim"
 
-  path libgpiodPath / "include"
+    path libgpiodPath / "include"
 
-  compilerArg "-fsigned-char"
+    compilerArg "-fsigned-char"
 
-  renameCallback futharkRenameCallback
+    renameCallback futharkRenameCallback
 
-  "gpiod.h"
+    "gpiod.h"
