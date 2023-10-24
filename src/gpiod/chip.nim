@@ -32,5 +32,5 @@ proc getInfo*(self: Chip): ChipInfo =
 proc getPath*(self: Chip): string =
   return $gpiod_chip_get_path(self.chip)
 
-proc getLineInfo*(self: Chip; offset: uint): LineInfo =
-  let lineInfo = gpiod_chip_get_line_info(self.chip, offset)
+# proc getLineInfo*(self: Chip; offset: uint): LineInfo =
+#   let lineInfo = gpiod_chip_get_line_info(self.chip, offset)

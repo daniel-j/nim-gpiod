@@ -14,6 +14,8 @@ requires "futhark >= 0.9.3"
 
 import std/os
 
-before build:
-  # build libgpiod C library
-  exec("rm -rf build; cd vendor/libgpiod/; ./autogen.sh --prefix=\"/libgpiod\"; sed -i -e 's/ -shared / -Wl,-O1,--as-needed\\0/g' libtool; make; make DESTDIR=\"" & (currentSourcePath.parentDir / "build") & "\" install")
+task libgpiod, "Build libgpiod library":
+  exec("rm -rf build && cd vendor/libgpiod && ./autogen.sh --prefix=\"/libgpiod\" && sed -i -e 's/ -shared / -Wl,-O1,--as-needed\\0/g' libtool && make && make DESTDIR=\"" & (currentSourcePath.parentDir / "build") & "\" install")
+
+before install:
+  libgpiodTask()
