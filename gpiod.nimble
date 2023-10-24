@@ -11,7 +11,7 @@ srcDir        = "src"
 
 requires "nim >= 1.6.0"
 
-when NimMajor >= 2:
+when compiles(taskRequires):
   taskRequires "futharkgen", "futhark >= 0.9.3"
 else:
   requires "futhark >= 0.9.3"
