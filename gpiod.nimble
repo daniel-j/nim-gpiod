@@ -11,7 +11,10 @@ srcDir        = "src"
 
 requires "nim >= 1.6.0"
 
-taskRequires "futharkgen", "futhark >= 0.9.3"
+when NimMajor >= 2:
+  taskRequires "futharkgen", "futhark >= 0.9.3"
+else:
+  requires "futhark >= 0.9.3"
 
 import std/os
 
