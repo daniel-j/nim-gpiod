@@ -65,4 +65,3 @@ proc makeLineInfo*(info: ptr GpiodLineInfo): LineInfo =
   result.eventClock = cast[Clock](gpiod_line_info_get_event_clock(info))
   result.debounced = gpiod_line_info_is_debounced(info)
   result.debouncePeriod = initDuration(microseconds = gpiod_line_info_get_debounce_period_us(info).int64)
-
