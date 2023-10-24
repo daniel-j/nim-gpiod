@@ -1,4 +1,6 @@
 import ./libgpiod
+import ./line
+export line
 
 type
   Chip* = object
@@ -32,5 +34,14 @@ proc getInfo*(self: Chip): ChipInfo =
 proc getPath*(self: Chip): string =
   return $gpiod_chip_get_path(self.chip)
 
-# proc getLineInfo*(self: Chip; offset: uint): LineInfo =
-#   let lineInfo = gpiod_chip_get_line_info(self.chip, offset)
+proc getLineInfo*(self: Chip; offset: uint; watch: bool = false): LineInfo =
+  var info: ptr Gpiodlineinfo
+  if watch:
+    info = gpiod_chip_watch_line_info(self.chip, offset.cuint)
+  else:
+    info = gpiod_chip_get_line_info(self.chip, offset.cuint)
+
+  if info.isNil: return
+
+  result = makeLineInfo(info)
+  gpiod_line_info_free(info)
