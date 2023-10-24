@@ -4,35 +4,35 @@ export times
 import ./libgpiod
 
 type
-  Value* = enum
+  Value* {.pure.} = enum
     ValueError = GpiodLineValueError
     Inactive = GpiodLineValueInactive
     Active = GpiodLineValueActive
 
-  Direction* = enum
+  Direction* {.pure.} = enum
     AsIs = GpiodLinedirectionAsIs
     Input = GpiodLinedirectionInput
     Output = GpiodLinedirectionOutput
 
-  Bias* = enum
+  Bias* {.pure.} = enum
     AsIs = GpiodLineBiasAsIs
     Unknown = GpiodLineBiasUnknown
     Disabled = GpiodLineBiasDisabled
     PullUp = GpiodLineBiasPullUp
     PullDown = GpiodLineBiasPullDown
 
-  Drive* = enum
+  Drive* {.pure.} = enum
     PushPull = GpiodLineDrivePushPull
     OpenDrain = GpiodLineDriveOpenDrain
     OpenSource = GpiodLineDriveOpenSource
 
-  Edge* = enum
+  Edge* {.pure.} = enum
     None = GpiodLineEdgeNone
     Rising = GpiodLineEdgeRising
     Falling = GpiodLineEdgeFalling
     Both = GpiodLineEdgeBoth
 
-  Clock* = enum
+  Clock* {.pure.} = enum
     Monotonic = GpiodLineClockMonotonic
     Realtime = GpiodLineClockRealtime
     Hte = GpiodLineClockHte
