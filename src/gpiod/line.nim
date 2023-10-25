@@ -1,7 +1,7 @@
 import std/times
-export times
-
 import ./libgpiod
+
+export times
 
 type
   Value* {.pure.} = enum
@@ -51,6 +51,9 @@ type
     debounced*: bool
     debouncePeriod*: Duration
 
+  LineConfig* = object
+    cfg: ptr GpiodLineConfig
+
 proc makeLineInfo*(info: ptr GpiodLineInfo): LineInfo =
   if info.isNil: return
   result.offset = gpiod_line_info_get_offset(info).int
@@ -65,3 +68,16 @@ proc makeLineInfo*(info: ptr GpiodLineInfo): LineInfo =
   result.eventClock = cast[Clock](gpiod_line_info_get_event_clock(info))
   result.debounced = gpiod_line_info_is_debounced(info)
   result.debouncePeriod = initDuration(microseconds = gpiod_line_info_get_debounce_period_us(info).int64)
+
+proc init*(self: var LineConfig): int =
+  self.cfg = gpiod_line_config_new()
+  if self.cfg.isNil: return -1
+  return 0
+
+proc finalize*(self: var LineConfig) =
+  if self.cfg.isNil: return
+  gpiod_line_config_free(self.cfg)
+  self.cfg = nil
+
+proc getData*(self: LineConfig): ptr GpiodLineConfig =
+  return self.cfg

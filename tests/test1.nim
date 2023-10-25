@@ -2,10 +2,14 @@
 import gpiod
 
 proc main() =
-  var chip = initChip("/dev/gpiochip0")
+  try:
+    var chip = Chip.open("/dev/gpiochip0")
 
-  echo chip.isOpen()
+    echo chip.isOpen()
 
-  echo chip.getInfo()
+    echo chip.getInfo()
+
+  except OpenChipError:
+    echo "Couldn't open chip!"
 
 main()
