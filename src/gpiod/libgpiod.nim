@@ -12,10 +12,13 @@ func futharkRenameCallback*(name: string; kind: string; partof: string): string 
 
 const libgpiodPath = currentSourcePath.parentDir / ".." / ".." / "build" / "libgpiod"
 
+{.passC: "-I" & libgpiodPath / "include".}
 {.passL: libgpiodPath / "lib" / "libgpiod.a".}
 
 when defined(nimcheck) or not defined(futharkgen):
+  {.push header: "gpiod.h".}
   include ./futhark_libgpiod
+  {.pop.}
 else:
   import futhark
   importc:

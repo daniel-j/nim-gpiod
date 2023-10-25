@@ -26,9 +26,9 @@ task futharkgen, "Generate wrapper with futhark":
   exec("nim c -d:release --out:build/nimcache/futharkgen src/gpiod/futharkgen")
   exec("build/nimcache/futharkgen")
 
-before test:
-  libgpiodTask()
-  futharkgenTask()
+# before test:
+#   libgpiodTask()
+#   futharkgenTask()
 
 before install:
   libgpiodTask()
