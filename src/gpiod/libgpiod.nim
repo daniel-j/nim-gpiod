@@ -10,7 +10,7 @@ func futharkRenameCallback*(name: string; kind: string; partof: string): string 
       result[0] = result[0].toUpperAscii()
 
 
-const libgpiodPath = currentSourcePath.parentDir / ".." / ".." / "build" / "libgpiod"
+const libgpiodPath = currentSourcePath.parentDir / "libgpiod"
 
 {.passC: "-I" & libgpiodPath / "include".}
 {.passL: libgpiodPath / "lib" / "libgpiod.a".}
