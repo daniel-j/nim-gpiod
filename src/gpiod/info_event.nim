@@ -10,5 +10,5 @@ type
 
   InfoEvent* = object
     eventType*: EventType
-    timestampNs*: uint
+    timestampNs*: uint64
     lineInfo*: LineInfo
