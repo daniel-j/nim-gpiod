@@ -1,9 +1,10 @@
 import ./libgpiod
+import ./exception
 import ./line
 import ./info_event
-import ./exception
+import ./request
 
-export line, info_event, exception
+export exception, line, info_event, request
 
 type
   Chip* = object
@@ -59,8 +60,8 @@ proc watchLineInfo*(self: Chip; offset: Offset): LineInfo =
 proc unwatchLineInfo*(self: Chip; offset: Offset) =
   discard gpiod_chip_unwatch_line_info(self.chip, offset.cuint)
 
-proc waitInfoEvent*(self: Chip; timeout: int64 = -1): bool =
-  let ret = gpiod_chip_wait_info_event(self.chip, timeout)
+proc waitInfoEvent*(self: Chip; timeout: Duration): bool =
+  let ret = gpiod_chip_wait_info_event(self.chip, timeout.inNanoseconds)
   if ret < 0:
     raise newException(ChipWaitInfoEventError, "Error occured when waiting for chip event")
   return ret > 0
@@ -76,7 +77,7 @@ proc readInfoEvent*(self: Chip): InfoEvent =
 
   let eventObj = InfoEvent(
     eventType: cast[EventType](gpiod_info_event_get_event_type(event)),
-    timestampNs: gpiod_info_event_get_timestamp_ns(event),
+    timestamp: initDuration(nanoseconds = gpiod_info_event_get_timestamp_ns(event).int64), # todo: loses bits
     lineInfo: infoObj
   )
 
@@ -88,28 +89,10 @@ proc lineOffsetFromName*(self: Chip; name: string): Offset =
     raise newException(ChipGetLineOffsetFromNameError, "Couldn't get chip line offset from name")
   return Offset(offset)
 
-proc makeRequestConfig*(consumer: string; eventBufferSize: uint): ptr GpiodRequestConfig =
-  if consumer.len == 0: return
-  let refCfg = gpiod_request_config_new()
-  if refCfg.isNil: return
+proc requestLines*(self: Chip; requestConfig: RequestConfig; lineConfig: LineConfig): Request =
+  let request = gpiod_chip_request_lines(self.chip, requestConfig.config, lineConfig.config)
 
-  gpiod_request_config_set_consumer(refCfg, consumer.cstring)
+  if request.isNil:
+    raise newException(ChipRequestLinesError, "Failed to request lines from chip")
 
-  gpiod_request_config_set_event_buffer_size(refCfg, eventBufferSize)
-
-  return refCfg
-
-
-# proc requestLines*(self: Chip; lineConfig: LineConfig; consumer: string; eventBufferSize: uint): Request =
-#   let lineCfg = lineConfig.getData()
-#   if lineCfg.isNil: return
-
-#   let reqCfg = makeRequestConfig(consumer, eventBufferSize)
-
-#   let request = gpiod_chip_request_lines(self.chip, reqCfg, lineCfg)
-
-#   let reqObj = makeRequestObject(request, gpiod_request_config_get_event_buffer_size(reqCfg))
-#   gpiod_request_config_free(reqCfg)
-#   gpiod_line_request_release(request)
-
-#   return reqObj
+  return newRequest(request)

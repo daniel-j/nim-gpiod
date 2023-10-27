@@ -1,7 +1,8 @@
 import std/times
 import ./libgpiod
+import ./exception
 
-export times
+export exception, times
 
 type
   Value* {.pure.} = enum
@@ -9,7 +10,7 @@ type
     Inactive = GpiodLineValueInactive
     Active = GpiodLineValueActive
 
-  Offset* = distinct cuint
+  Offset* = cuint
 
   Direction* {.pure.} = enum
     AsIs = GpiodLinedirectionAsIs
@@ -54,7 +55,10 @@ type
     debouncePeriod*: Duration
 
   LineConfig* = object
-    cfg: ptr GpiodLineConfig
+    config*: ptr GpiodLineConfig
+
+proc `=destroy`*(self: var LineConfig) =
+  gpiod_line_config_free(self.config)
 
 proc makeLineInfo*(info: ptr GpiodLineInfo): LineInfo =
   if info.isNil: return
@@ -71,15 +75,8 @@ proc makeLineInfo*(info: ptr GpiodLineInfo): LineInfo =
   result.debounced = gpiod_line_info_is_debounced(info)
   result.debouncePeriod = initDuration(microseconds = gpiod_line_info_get_debounce_period_us(info).int64)
 
-proc init*(self: var LineConfig): int =
-  self.cfg = gpiod_line_config_new()
-  if self.cfg.isNil: return -1
-  return 0
+proc newLineConfig*(): LineConfig =
+  result.config = gpiod_line_config_new()
+  if result.config.isNil:
+    raise newException(LineConfigNewError, "Failed to create line config")
 
-proc finalize*(self: var LineConfig) =
-  if self.cfg.isNil: return
-  gpiod_line_config_free(self.cfg)
-  self.cfg = nil
-
-proc getData*(self: LineConfig): ptr GpiodLineConfig =
-  return self.cfg

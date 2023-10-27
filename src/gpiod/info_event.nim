@@ -11,5 +11,5 @@ type
   InfoEvent* = object
     # event*: ptr GpiodInfoEvent
     eventType*: EventType
-    timestampNs*: uint64
+    timestamp*: Duration
     lineInfo*: LineInfo

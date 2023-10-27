@@ -5,4 +5,9 @@ type
   ChipWaitInfoEventError* = object of CatchableError
   ChipReadInfoEventError* = object of CatchableError
   ChipGetLineOffsetFromNameError* = object of CatchableError
-  RequestReleasedError* = object of CatchableError
+  ChipRequestLinesError* = object of CatchableError
+  RequestConfigNewError* = object of CatchableError
+  RequestConfigGetConsumerError* = object of CatchableError
+  LineConfigNewError* = object of CatchableError
+  LineRequestGetValueError* = object of CatchableError
+  LineRequestGetValSubsetError* = object of CatchableError
