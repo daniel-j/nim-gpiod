@@ -66,7 +66,7 @@ proc gpiodchipunwatchlineinfo*(chip: ptr Gpiodchip; offset: cuint): cint {.
     cdecl, importc: "gpiod_chip_unwatch_line_info".}
 proc gpiodchipgetfd*(chip: ptr Gpiodchip): cint {.cdecl,
     importc: "gpiod_chip_get_fd".}
-proc gpiodchipwaitinfoevent*(chip: ptr Gpiodchip; timeoutns: clong): cint {.
+proc gpiodchipwaitinfoevent*(chip: ptr Gpiodchip; timeoutns: int64): cint {.
     cdecl, importc: "gpiod_chip_wait_info_event".}
 proc gpiodchipreadinfoevent*(chip: ptr Gpiodchip): ptr Gpiodinfoevent {.cdecl,
     importc: "gpiod_chip_read_info_event".}
@@ -81,7 +81,7 @@ proc gpiodchipinfogetname*(info: ptr Gpiodchipinfo): cstring {.cdecl,
     importc: "gpiod_chip_info_get_name".}
 proc gpiodchipinfogetlabel*(info: ptr Gpiodchipinfo): cstring {.cdecl,
     importc: "gpiod_chip_info_get_label".}
-proc gpiodchipinfogetnumlines*(info: ptr Gpiodchipinfo): culong {.cdecl,
+proc gpiodchipinfogetnumlines*(info: ptr Gpiodchipinfo): csize_t {.cdecl,
     importc: "gpiod_chip_info_get_num_lines".}
 proc gpiodlineinfofree*(info: ptr Gpiodlineinfo): void {.cdecl,
     importc: "gpiod_line_info_free".}
@@ -115,7 +115,7 @@ proc gpiodinfoeventfree*(event: ptr Gpiodinfoevent): void {.cdecl,
     importc: "gpiod_info_event_free".}
 proc gpiodinfoeventgeteventtype*(event: ptr Gpiodinfoevent): Gpiodinfoeventtype {.
     cdecl, importc: "gpiod_info_event_get_event_type".}
-proc gpiodinfoeventgettimestampns*(event: ptr Gpiodinfoevent): culong {.cdecl,
+proc gpiodinfoeventgettimestampns*(event: ptr Gpiodinfoevent): uint64 {.cdecl,
     importc: "gpiod_info_event_get_timestamp_ns".}
 proc gpiodinfoeventgetlineinfo*(event: ptr Gpiodinfoevent): ptr Gpiodlineinfo {.
     cdecl, importc: "gpiod_info_event_get_line_info".}
@@ -173,19 +173,19 @@ proc gpiodlineconfigfree*(config: ptr Gpiodlineconfig): void {.cdecl,
 proc gpiodlineconfigreset*(config: ptr Gpiodlineconfig): void {.cdecl,
     importc: "gpiod_line_config_reset".}
 proc gpiodlineconfigaddlinesettings*(config: ptr Gpiodlineconfig;
-                                     offsets: ptr cuint; numoffsets: culong;
+                                     offsets: ptr cuint; numoffsets: csize_t;
                                      settings: ptr Gpiodlinesettings): cint {.
     cdecl, importc: "gpiod_line_config_add_line_settings".}
 proc gpiodlineconfiggetlinesettings*(config: ptr Gpiodlineconfig; offset: cuint): ptr Gpiodlinesettings {.
     cdecl, importc: "gpiod_line_config_get_line_settings".}
 proc gpiodlineconfigsetoutputvalues*(config: ptr Gpiodlineconfig;
                                      values: ptr Gpiodlinevalue;
-                                     numvalues: culong): cint {.cdecl,
+                                     numvalues: csize_t): cint {.cdecl,
     importc: "gpiod_line_config_set_output_values".}
-proc gpiodlineconfiggetnumconfiguredoffsets*(config: ptr Gpiodlineconfig): culong {.
+proc gpiodlineconfiggetnumconfiguredoffsets*(config: ptr Gpiodlineconfig): csize_t {.
     cdecl, importc: "gpiod_line_config_get_num_configured_offsets".}
 proc gpiodlineconfiggetconfiguredoffsets*(config: ptr Gpiodlineconfig;
-    offsets: ptr cuint; maxoffsets: culong): culong {.cdecl,
+    offsets: ptr cuint; maxoffsets: csize_t): csize_t {.cdecl,
     importc: "gpiod_line_config_get_configured_offsets".}
 proc gpiodrequestconfignew*(): ptr Gpiodrequestconfig {.cdecl,
     importc: "gpiod_request_config_new".}
@@ -197,22 +197,22 @@ proc gpiodrequestconfigsetconsumer*(config: ptr Gpiodrequestconfig;
 proc gpiodrequestconfiggetconsumer*(config: ptr Gpiodrequestconfig): cstring {.
     cdecl, importc: "gpiod_request_config_get_consumer".}
 proc gpiodrequestconfigseteventbuffersize*(config: ptr Gpiodrequestconfig;
-    eventbuffersize: culong): void {.cdecl, importc: "gpiod_request_config_set_event_buffer_size".}
-proc gpiodrequestconfiggeteventbuffersize*(config: ptr Gpiodrequestconfig): culong {.
+    eventbuffersize: csize_t): void {.cdecl, importc: "gpiod_request_config_set_event_buffer_size".}
+proc gpiodrequestconfiggeteventbuffersize*(config: ptr Gpiodrequestconfig): csize_t {.
     cdecl, importc: "gpiod_request_config_get_event_buffer_size".}
 proc gpiodlinerequestrelease*(request: ptr Gpiodlinerequest): void {.cdecl,
     importc: "gpiod_line_request_release".}
 proc gpiodlinerequestgetchipname*(request: ptr Gpiodlinerequest): cstring {.
     cdecl, importc: "gpiod_line_request_get_chip_name".}
-proc gpiodlinerequestgetnumrequestedlines*(request: ptr Gpiodlinerequest): culong {.
+proc gpiodlinerequestgetnumrequestedlines*(request: ptr Gpiodlinerequest): csize_t {.
     cdecl, importc: "gpiod_line_request_get_num_requested_lines".}
 proc gpiodlinerequestgetrequestedoffsets*(request: ptr Gpiodlinerequest;
-    offsets: ptr cuint; maxoffsets: culong): culong {.cdecl,
+    offsets: ptr cuint; maxoffsets: csize_t): csize_t {.cdecl,
     importc: "gpiod_line_request_get_requested_offsets".}
 proc gpiodlinerequestgetvalue*(request: ptr Gpiodlinerequest; offset: cuint): Gpiodlinevalue {.
     cdecl, importc: "gpiod_line_request_get_value".}
 proc gpiodlinerequestgetvaluessubset*(request: ptr Gpiodlinerequest;
-                                      numvalues: culong; offsets: ptr cuint;
+                                      numvalues: csize_t; offsets: ptr cuint;
                                       values: ptr Gpiodlinevalue): cint {.cdecl,
     importc: "gpiod_line_request_get_values_subset".}
 proc gpiodlinerequestgetvalues*(request: ptr Gpiodlinerequest;
@@ -222,7 +222,7 @@ proc gpiodlinerequestsetvalue*(request: ptr Gpiodlinerequest; offset: cuint;
                                value: Gpiodlinevalue): cint {.cdecl,
     importc: "gpiod_line_request_set_value".}
 proc gpiodlinerequestsetvaluessubset*(request: ptr Gpiodlinerequest;
-                                      numvalues: culong; offsets: ptr cuint;
+                                      numvalues: csize_t; offsets: ptr cuint;
                                       values: ptr Gpiodlinevalue): cint {.cdecl,
     importc: "gpiod_line_request_set_values_subset".}
 proc gpiodlinerequestsetvalues*(request: ptr Gpiodlinerequest;
@@ -234,11 +234,11 @@ proc gpiodlinerequestreconfigurelines*(request: ptr Gpiodlinerequest;
 proc gpiodlinerequestgetfd*(request: ptr Gpiodlinerequest): cint {.cdecl,
     importc: "gpiod_line_request_get_fd".}
 proc gpiodlinerequestwaitedgeevents*(request: ptr Gpiodlinerequest;
-                                     timeoutns: clong): cint {.cdecl,
+                                     timeoutns: int64): cint {.cdecl,
     importc: "gpiod_line_request_wait_edge_events".}
 proc gpiodlinerequestreadedgeevents*(request: ptr Gpiodlinerequest;
                                      buffer: ptr Gpiodedgeeventbuffer;
-                                     maxevents: culong): cint {.cdecl,
+                                     maxevents: csize_t): cint {.cdecl,
     importc: "gpiod_line_request_read_edge_events".}
 proc gpiodedgeeventfree*(event: ptr Gpiodedgeevent): void {.cdecl,
     importc: "gpiod_edge_event_free".}
@@ -246,7 +246,7 @@ proc gpiodedgeeventcopy*(event: ptr Gpiodedgeevent): ptr Gpiodedgeevent {.cdecl,
     importc: "gpiod_edge_event_copy".}
 proc gpiodedgeeventgeteventtype*(event: ptr Gpiodedgeevent): Gpiodedgeeventtype {.
     cdecl, importc: "gpiod_edge_event_get_event_type".}
-proc gpiodedgeeventgettimestampns*(event: ptr Gpiodedgeevent): culong {.cdecl,
+proc gpiodedgeeventgettimestampns*(event: ptr Gpiodedgeevent): uint64 {.cdecl,
     importc: "gpiod_edge_event_get_timestamp_ns".}
 proc gpiodedgeeventgetlineoffset*(event: ptr Gpiodedgeevent): cuint {.cdecl,
     importc: "gpiod_edge_event_get_line_offset".}
@@ -254,16 +254,16 @@ proc gpiodedgeeventgetglobalseqno*(event: ptr Gpiodedgeevent): culong {.cdecl,
     importc: "gpiod_edge_event_get_global_seqno".}
 proc gpiodedgeeventgetlineseqno*(event: ptr Gpiodedgeevent): culong {.cdecl,
     importc: "gpiod_edge_event_get_line_seqno".}
-proc gpiodedgeeventbuffernew*(capacity: culong): ptr Gpiodedgeeventbuffer {.
+proc gpiodedgeeventbuffernew*(capacity: csize_t): ptr Gpiodedgeeventbuffer {.
     cdecl, importc: "gpiod_edge_event_buffer_new".}
-proc gpiodedgeeventbuffergetcapacity*(buffer: ptr Gpiodedgeeventbuffer): culong {.
+proc gpiodedgeeventbuffergetcapacity*(buffer: ptr Gpiodedgeeventbuffer): csize_t {.
     cdecl, importc: "gpiod_edge_event_buffer_get_capacity".}
 proc gpiodedgeeventbufferfree*(buffer: ptr Gpiodedgeeventbuffer): void {.cdecl,
     importc: "gpiod_edge_event_buffer_free".}
 proc gpiodedgeeventbuffergetevent*(buffer: ptr Gpiodedgeeventbuffer;
                                    index: culong): ptr Gpiodedgeevent {.cdecl,
     importc: "gpiod_edge_event_buffer_get_event".}
-proc gpiodedgeeventbuffergetnumevents*(buffer: ptr Gpiodedgeeventbuffer): culong {.
+proc gpiodedgeeventbuffergetnumevents*(buffer: ptr Gpiodedgeeventbuffer): csize_t {.
     cdecl, importc: "gpiod_edge_event_buffer_get_num_events".}
 proc gpiodisgpiochipdevice*(path: cstring): bool {.cdecl,
     importc: "gpiod_is_gpiochip_device".}

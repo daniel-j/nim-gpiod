@@ -9,6 +9,8 @@ type
     Inactive = GpiodLineValueInactive
     Active = GpiodLineValueActive
 
+  Offset* = distinct cuint
+
   Direction* {.pure.} = enum
     AsIs = GpiodLinedirectionAsIs
     Input = GpiodLinedirectionInput

@@ -14,68 +14,65 @@ type
     label*: string
     numLines*: int
 
-proc isOpen*(self: Chip): bool =
-  return not self.chip.isNil
-
-proc `=destroy`(self: var Chip) =
-  if not self.isOpen(): return
-  gpiod_chip_close(self.chip)
-  # self.chip = nil
-
 proc open*(_: typedesc[Chip]; path: string): Chip =
   let chip = gpiod_chip_open(path.cstring)
   if chip.isNil:
     raise newException(OpenChipError, "Error opening chip " & path)
   result.chip = chip
 
+proc `=destroy`(self: var Chip) =
+  gpiod_chip_close(self.chip)
+  # self.chip = nil
+
 proc getPath*(self: Chip): string =
-  if not self.isOpen(): return
   return $gpiod_chip_get_path(self.chip)
 
 proc getFd*(self: Chip): int =
-  if not self.isOpen(): return
   return gpiod_chip_get_fd(self.chip)
 
-proc close*(self: var Chip) =
-  if not self.isOpen(): return
-  gpiod_chip_close(self.chip)
-  self.chip = nil
-
 proc getInfo*(self: Chip): ChipInfo =
-  if not self.isOpen(): return
   let chipInfo = gpiod_chip_get_info(self.chip)
-  if not chipInfo.isNil:
-    defer: gpiod_chip_info_free(chipInfo)
-    result.name = $gpiod_chip_info_get_name(chipInfo)
-    result.label = $gpiod_chip_info_get_label(chipInfo)
-    result.numLines = gpiod_chip_info_get_num_lines(chipInfo).int
+  if chipInfo.isNil:
+    raise newException(ChipGetInfoError, "Could not get chip info")
 
-proc getLineInfo*(self: Chip; offset: uint; watch: bool = false): LineInfo =
-  if not self.isOpen(): return
-  var info: ptr Gpiodlineinfo
-  if watch:
-    info = gpiod_chip_watch_line_info(self.chip, offset.cuint)
-  else:
-    info = gpiod_chip_get_line_info(self.chip, offset.cuint)
+  defer: gpiod_chip_info_free(chipInfo)
+  result.name = $gpiod_chip_info_get_name(chipInfo)
+  result.label = $gpiod_chip_info_get_label(chipInfo)
+  result.numLines = gpiod_chip_info_get_num_lines(chipInfo).int
 
-  if info.isNil: return
+proc getLineInfo*(self: Chip; offset: Offset): LineInfo =
+  let info = gpiod_chip_get_line_info(self.chip, offset.cuint)
+  if info.isNil:
+    raise newException(ChipLineInfoError, "Couldn't get chip line info")
 
   result = makeLineInfo(info)
   gpiod_line_info_free(info)
 
-proc unwatchLineInfo*(self: Chip; offset: uint) =
-  if not self.isOpen(): return
+proc watchLineInfo*(self: Chip; offset: Offset): LineInfo =
+  let info = gpiod_chip_watch_line_info(self.chip, offset.cuint)
+  if info.isNil:
+    raise newException(ChipLineInfoError, "Couldn't get chip line info")
+
+  result = makeLineInfo(info)
+  gpiod_line_info_free(info)
+
+proc unwatchLineInfo*(self: Chip; offset: Offset) =
   discard gpiod_chip_unwatch_line_info(self.chip, offset.cuint)
 
+proc waitInfoEvent*(self: Chip; timeout: int64 = -1): bool =
+  let ret = gpiod_chip_wait_info_event(self.chip, timeout)
+  if ret < 0:
+    raise newException(ChipWaitInfoEventError, "Error occured when waiting for chip event")
+  return ret > 0
+
 proc readInfoEvent*(self: Chip): InfoEvent =
-  if not self.isOpen(): return
   let event = gpiod_chip_read_info_event(self.chip)
-  if event.isNil: return
+  if event.isNil:
+    raise newException(ChipReadInfoEventError, "Couldn't read chip info event")
   defer: gpiod_info_event_free(event)
 
   let info = gpiod_info_event_get_line_info(event)
   let infoObj = makeLineInfo(info)
-  gpiod_line_info_free(info)
 
   let eventObj = InfoEvent(
     eventType: cast[EventType](gpiod_info_event_get_event_type(event)),
@@ -85,11 +82,11 @@ proc readInfoEvent*(self: Chip): InfoEvent =
 
   return eventObj
 
-proc lineOffsetFromId*(self: Chip; name: string): int =
+proc lineOffsetFromName*(self: Chip; name: string): Offset =
   let offset = gpiod_chip_get_line_offset_from_name(self.chip, name.cstring)
   if offset < 0:
-    ## error
-  return offset
+    raise newException(ChipGetLineOffsetFromNameError, "Couldn't get chip line offset from name")
+  return Offset(offset)
 
 proc makeRequestConfig*(consumer: string; eventBufferSize: uint): ptr GpiodRequestConfig =
   if consumer.len == 0: return

@@ -9,6 +9,7 @@ type
     LineConfigChanged = GpiodInfoEventLineConfigChanged
 
   InfoEvent* = object
+    # event*: ptr GpiodInfoEvent
     eventType*: EventType
     timestampNs*: uint64
     lineInfo*: LineInfo
