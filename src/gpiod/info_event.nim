@@ -3,10 +3,7 @@ import ./line
 export line
 
 type
-  EventType* = enum
-    LineRequested = GpiodInfoEventLineRequested
-    LineReleased = GpiodInfoEventLineReleased
-    LineConfigChanged = GpiodInfoEventLineConfigChanged
+  EventType* = GpiodInfoEventType
 
   InfoEvent* = object
     # event*: ptr GpiodInfoEvent

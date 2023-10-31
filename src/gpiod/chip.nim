@@ -76,7 +76,7 @@ proc readInfoEvent*(self: Chip): InfoEvent =
   let infoObj = makeLineInfo(info)
 
   let eventObj = InfoEvent(
-    eventType: cast[EventType](gpiod_info_event_get_event_type(event)),
+    eventType: gpiod_info_event_get_event_type(event),
     timestamp: initDuration(nanoseconds = gpiod_info_event_get_timestamp_ns(event).int64), # todo: loses bits
     lineInfo: infoObj
   )

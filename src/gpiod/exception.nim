@@ -11,3 +11,7 @@ type
   LineConfigNewError* = object of CatchableError
   LineRequestGetValueError* = object of CatchableError
   LineRequestGetValSubsetError* = object of CatchableError
+  LineRequestSetValError* = object of CatchableError
+  LineRequestSetValSubsetError* = object of CatchableError
+  LineRequestReconfigLinesError* = object of CatchableError
+  LineRequestWaitEdgeEventError* = object of CatchableError
