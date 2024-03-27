@@ -31,25 +31,25 @@ type
   Gpiodedgeeventtype* {.size: sizeof(cuint).} = enum
     Gpiodedgeeventrisingedge = 1, Gpiodedgeeventfallingedge = 2
 type
-  Gpiodchip* = distinct object
+  Gpiodchip* = object
 type
-  Gpiodlinerequest* = distinct object
+  Gpiodlinerequest* = object
 type
-  Gpiodchipinfo* = distinct object
+  Gpiodchipinfo* = object
 type
-  Gpiodlinesettings* = distinct object
+  Gpiodlinesettings* = object
 type
-  Gpiodlineinfo* = distinct object
+  Gpiodlineinfo* = object
 type
-  Gpiodlineconfig* = distinct object
+  Gpiodlineconfig* = object
 type
-  Gpiodedgeevent* = distinct object
+  Gpiodedgeevent* = object
 type
-  Gpiodedgeeventbuffer* = distinct object
+  Gpiodedgeeventbuffer* = object
 type
-  Gpiodrequestconfig* = distinct object
+  Gpiodrequestconfig* = object
 type
-  Gpiodinfoevent* = distinct object
+  Gpiodinfoevent* = object
 proc gpiodchipopen*(path: cstring): ptr Gpiodchip {.cdecl,
     importc: "gpiod_chip_open".}
 proc gpiodchipclose*(chip: ptr Gpiodchip): void {.cdecl,
