@@ -1,6 +1,6 @@
 # Package
 
-version       = "0.1.0"
+version       = "0.2.0"
 author        = "djazz"
 description   = "Nim wrapper of libgpiod v2"
 license       = "LGPL-2.1-or-later"
@@ -12,9 +12,9 @@ srcDir        = "src"
 requires "nim >= 1.6.0"
 
 when compiles(taskRequires):
-  taskRequires "futharkgen", "futhark >= 0.11.0"
+  taskRequires "futharkgen", "futhark >= 0.13.7"
 else:
-  requires "futhark >= 0.11.0"
+  requires "futhark >= 0.13.7"
 
 import std/os
 

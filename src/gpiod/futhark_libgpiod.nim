@@ -1,270 +1,271 @@
 
 type
-  Gpiodlinevalue* {.size: sizeof(cint).} = enum
-    Gpiodlinevalueerror = -1, Gpiodlinevalueinactive = 0,
-    Gpiodlinevalueactive = 1
+  Gpiod_line_value* {.size: sizeof(cint).} = enum
+    GPIOD_LINE_VALUE_ERROR = -1, GPIOD_LINE_VALUE_INACTIVE = 0,
+    GPIOD_LINE_VALUE_ACTIVE = 1
 type
-  Gpiodlinedirection* {.size: sizeof(cuint).} = enum
-    Gpiodlinedirectionasis = 1, Gpiodlinedirectioninput = 2,
-    Gpiodlinedirectionoutput = 3
+  Gpiod_line_direction* {.size: sizeof(cuint).} = enum
+    GPIOD_LINE_DIRECTION_AS_IS = 1, GPIOD_LINE_DIRECTION_INPUT = 2,
+    GPIOD_LINE_DIRECTION_OUTPUT = 3
 type
-  Gpiodlineedge* {.size: sizeof(cuint).} = enum
-    Gpiodlineedgenone = 1, Gpiodlineedgerising = 2, Gpiodlineedgefalling = 3,
-    Gpiodlineedgeboth = 4
+  Gpiod_line_edge* {.size: sizeof(cuint).} = enum
+    GPIOD_LINE_EDGE_NONE = 1, GPIOD_LINE_EDGE_RISING = 2,
+    GPIOD_LINE_EDGE_FALLING = 3, GPIOD_LINE_EDGE_BOTH = 4
 type
-  Gpiodlinebias* {.size: sizeof(cuint).} = enum
-    Gpiodlinebiasasis = 1, Gpiodlinebiasunknown = 2, Gpiodlinebiasdisabled = 3,
-    Gpiodlinebiaspullup = 4, Gpiodlinebiaspulldown = 5
+  Gpiod_line_bias* {.size: sizeof(cuint).} = enum
+    GPIOD_LINE_BIAS_AS_IS = 1, GPIOD_LINE_BIAS_UNKNOWN = 2,
+    GPIOD_LINE_BIAS_DISABLED = 3, GPIOD_LINE_BIAS_PULL_UP = 4,
+    GPIOD_LINE_BIAS_PULL_DOWN = 5
 type
-  Gpiodlinedrive* {.size: sizeof(cuint).} = enum
-    Gpiodlinedrivepushpull = 1, Gpiodlinedriveopendrain = 2,
-    Gpiodlinedriveopensource = 3
+  Gpiod_line_drive* {.size: sizeof(cuint).} = enum
+    GPIOD_LINE_DRIVE_PUSH_PULL = 1, GPIOD_LINE_DRIVE_OPEN_DRAIN = 2,
+    GPIOD_LINE_DRIVE_OPEN_SOURCE = 3
 type
-  Gpiodlineclock* {.size: sizeof(cuint).} = enum
-    Gpiodlineclockmonotonic = 1, Gpiodlineclockrealtime = 2,
-    Gpiodlineclockhte = 3
+  Gpiod_line_clock* {.size: sizeof(cuint).} = enum
+    GPIOD_LINE_CLOCK_MONOTONIC = 1, GPIOD_LINE_CLOCK_REALTIME = 2,
+    GPIOD_LINE_CLOCK_HTE = 3
 type
-  Gpiodinfoeventtype* {.size: sizeof(cuint).} = enum
-    Gpiodinfoeventlinerequested = 1, Gpiodinfoeventlinereleased = 2,
-    Gpiodinfoeventlineconfigchanged = 3
+  Gpiod_info_event_type* {.size: sizeof(cuint).} = enum
+    GPIOD_INFO_EVENT_LINE_REQUESTED = 1, GPIOD_INFO_EVENT_LINE_RELEASED = 2,
+    GPIOD_INFO_EVENT_LINE_CONFIG_CHANGED = 3
 type
-  Gpiodedgeeventtype* {.size: sizeof(cuint).} = enum
-    Gpiodedgeeventrisingedge = 1, Gpiodedgeeventfallingedge = 2
+  Gpiod_edge_event_type* {.size: sizeof(cuint).} = enum
+    GPIOD_EDGE_EVENT_RISING_EDGE = 1, GPIOD_EDGE_EVENT_FALLING_EDGE = 2
 type
-  Gpiodchip* = object
+  Gpiod_line_settings* = object
 type
-  Gpiodlinerequest* = object
+  Gpiod_edge_event_buffer* = object
 type
-  Gpiodchipinfo* = object
+  Gpiod_info_event* = object
 type
-  Gpiodlinesettings* = object
+  Gpiod_chip* = object
 type
-  Gpiodlineinfo* = object
+  Gpiod_line_info* = object
 type
-  Gpiodlineconfig* = object
+  Gpiod_edge_event* = object
 type
-  Gpiodedgeevent* = object
+  Gpiod_line_config* = object
 type
-  Gpiodedgeeventbuffer* = object
+  Gpiod_line_request* = object
 type
-  Gpiodrequestconfig* = object
+  Gpiod_chip_info* = object
 type
-  Gpiodinfoevent* = object
-proc gpiodchipopen*(path: cstring): ptr Gpiodchip {.cdecl,
+  Gpiod_request_config* = object
+proc gpiod_chip_open*(path: cstring): ptr Gpiod_chip {.cdecl,
     importc: "gpiod_chip_open".}
-proc gpiodchipclose*(chip: ptr Gpiodchip): void {.cdecl,
+proc gpiod_chip_close*(chip: ptr Gpiod_chip): void {.cdecl,
     importc: "gpiod_chip_close".}
-proc gpiodchipgetinfo*(chip: ptr Gpiodchip): ptr Gpiodchipinfo {.cdecl,
+proc gpiod_chip_get_info*(chip: ptr Gpiod_chip): ptr Gpiod_chip_info {.cdecl,
     importc: "gpiod_chip_get_info".}
-proc gpiodchipgetpath*(chip: ptr Gpiodchip): cstring {.cdecl,
+proc gpiod_chip_get_path*(chip: ptr Gpiod_chip): cstring {.cdecl,
     importc: "gpiod_chip_get_path".}
-proc gpiodchipgetlineinfo*(chip: ptr Gpiodchip; offset: cuint): ptr Gpiodlineinfo {.
+proc gpiod_chip_get_line_info*(chip: ptr Gpiod_chip; offset: cuint): ptr Gpiod_line_info {.
     cdecl, importc: "gpiod_chip_get_line_info".}
-proc gpiodchipwatchlineinfo*(chip: ptr Gpiodchip; offset: cuint): ptr Gpiodlineinfo {.
+proc gpiod_chip_watch_line_info*(chip: ptr Gpiod_chip; offset: cuint): ptr Gpiod_line_info {.
     cdecl, importc: "gpiod_chip_watch_line_info".}
-proc gpiodchipunwatchlineinfo*(chip: ptr Gpiodchip; offset: cuint): cint {.
+proc gpiod_chip_unwatch_line_info*(chip: ptr Gpiod_chip; offset: cuint): cint {.
     cdecl, importc: "gpiod_chip_unwatch_line_info".}
-proc gpiodchipgetfd*(chip: ptr Gpiodchip): cint {.cdecl,
+proc gpiod_chip_get_fd*(chip: ptr Gpiod_chip): cint {.cdecl,
     importc: "gpiod_chip_get_fd".}
-proc gpiodchipwaitinfoevent*(chip: ptr Gpiodchip; timeoutns: int64): cint {.
+proc gpiod_chip_wait_info_event*(chip: ptr Gpiod_chip; timeout_ns: int64): cint {.
     cdecl, importc: "gpiod_chip_wait_info_event".}
-proc gpiodchipreadinfoevent*(chip: ptr Gpiodchip): ptr Gpiodinfoevent {.cdecl,
-    importc: "gpiod_chip_read_info_event".}
-proc gpiodchipgetlineoffsetfromname*(chip: ptr Gpiodchip; name: cstring): cint {.
+proc gpiod_chip_read_info_event*(chip: ptr Gpiod_chip): ptr Gpiod_info_event {.
+    cdecl, importc: "gpiod_chip_read_info_event".}
+proc gpiod_chip_get_line_offset_from_name*(chip: ptr Gpiod_chip; name: cstring): cint {.
     cdecl, importc: "gpiod_chip_get_line_offset_from_name".}
-proc gpiodchiprequestlines*(chip: ptr Gpiodchip; reqcfg: ptr Gpiodrequestconfig;
-                            linecfg: ptr Gpiodlineconfig): ptr Gpiodlinerequest {.
+proc gpiod_chip_request_lines*(chip: ptr Gpiod_chip;
+                               req_cfg: ptr Gpiod_request_config;
+                               line_cfg: ptr Gpiod_line_config): ptr Gpiod_line_request {.
     cdecl, importc: "gpiod_chip_request_lines".}
-proc gpiodchipinfofree*(info: ptr Gpiodchipinfo): void {.cdecl,
+proc gpiod_chip_info_free*(info: ptr Gpiod_chip_info): void {.cdecl,
     importc: "gpiod_chip_info_free".}
-proc gpiodchipinfogetname*(info: ptr Gpiodchipinfo): cstring {.cdecl,
+proc gpiod_chip_info_get_name*(info: ptr Gpiod_chip_info): cstring {.cdecl,
     importc: "gpiod_chip_info_get_name".}
-proc gpiodchipinfogetlabel*(info: ptr Gpiodchipinfo): cstring {.cdecl,
+proc gpiod_chip_info_get_label*(info: ptr Gpiod_chip_info): cstring {.cdecl,
     importc: "gpiod_chip_info_get_label".}
-proc gpiodchipinfogetnumlines*(info: ptr Gpiodchipinfo): csize_t {.cdecl,
+proc gpiod_chip_info_get_num_lines*(info: ptr Gpiod_chip_info): csize_t {.cdecl,
     importc: "gpiod_chip_info_get_num_lines".}
-proc gpiodlineinfofree*(info: ptr Gpiodlineinfo): void {.cdecl,
+proc gpiod_line_info_free*(info: ptr Gpiod_line_info): void {.cdecl,
     importc: "gpiod_line_info_free".}
-proc gpiodlineinfocopy*(info: ptr Gpiodlineinfo): ptr Gpiodlineinfo {.cdecl,
-    importc: "gpiod_line_info_copy".}
-proc gpiodlineinfogetoffset*(info: ptr Gpiodlineinfo): cuint {.cdecl,
+proc gpiod_line_info_copy*(info: ptr Gpiod_line_info): ptr Gpiod_line_info {.
+    cdecl, importc: "gpiod_line_info_copy".}
+proc gpiod_line_info_get_offset*(info: ptr Gpiod_line_info): cuint {.cdecl,
     importc: "gpiod_line_info_get_offset".}
-proc gpiodlineinfogetname*(info: ptr Gpiodlineinfo): cstring {.cdecl,
+proc gpiod_line_info_get_name*(info: ptr Gpiod_line_info): cstring {.cdecl,
     importc: "gpiod_line_info_get_name".}
-proc gpiodlineinfoisused*(info: ptr Gpiodlineinfo): bool {.cdecl,
+proc gpiod_line_info_is_used*(info: ptr Gpiod_line_info): bool {.cdecl,
     importc: "gpiod_line_info_is_used".}
-proc gpiodlineinfogetconsumer*(info: ptr Gpiodlineinfo): cstring {.cdecl,
+proc gpiod_line_info_get_consumer*(info: ptr Gpiod_line_info): cstring {.cdecl,
     importc: "gpiod_line_info_get_consumer".}
-proc gpiodlineinfogetdirection*(info: ptr Gpiodlineinfo): Gpiodlinedirection {.
+proc gpiod_line_info_get_direction*(info: ptr Gpiod_line_info): Gpiod_line_direction {.
     cdecl, importc: "gpiod_line_info_get_direction".}
-proc gpiodlineinfogetedgedetection*(info: ptr Gpiodlineinfo): Gpiodlineedge {.
+proc gpiod_line_info_get_edge_detection*(info: ptr Gpiod_line_info): Gpiod_line_edge {.
     cdecl, importc: "gpiod_line_info_get_edge_detection".}
-proc gpiodlineinfogetbias*(info: ptr Gpiodlineinfo): Gpiodlinebias {.cdecl,
-    importc: "gpiod_line_info_get_bias".}
-proc gpiodlineinfogetdrive*(info: ptr Gpiodlineinfo): Gpiodlinedrive {.cdecl,
-    importc: "gpiod_line_info_get_drive".}
-proc gpiodlineinfoisactivelow*(info: ptr Gpiodlineinfo): bool {.cdecl,
+proc gpiod_line_info_get_bias*(info: ptr Gpiod_line_info): Gpiod_line_bias {.
+    cdecl, importc: "gpiod_line_info_get_bias".}
+proc gpiod_line_info_get_drive*(info: ptr Gpiod_line_info): Gpiod_line_drive {.
+    cdecl, importc: "gpiod_line_info_get_drive".}
+proc gpiod_line_info_is_active_low*(info: ptr Gpiod_line_info): bool {.cdecl,
     importc: "gpiod_line_info_is_active_low".}
-proc gpiodlineinfoisdebounced*(info: ptr Gpiodlineinfo): bool {.cdecl,
+proc gpiod_line_info_is_debounced*(info: ptr Gpiod_line_info): bool {.cdecl,
     importc: "gpiod_line_info_is_debounced".}
-proc gpiodlineinfogetdebounceperiodus*(info: ptr Gpiodlineinfo): culong {.cdecl,
-    importc: "gpiod_line_info_get_debounce_period_us".}
-proc gpiodlineinfogeteventclock*(info: ptr Gpiodlineinfo): Gpiodlineclock {.
+proc gpiod_line_info_get_debounce_period_us*(info: ptr Gpiod_line_info): culong {.
+    cdecl, importc: "gpiod_line_info_get_debounce_period_us".}
+proc gpiod_line_info_get_event_clock*(info: ptr Gpiod_line_info): Gpiod_line_clock {.
     cdecl, importc: "gpiod_line_info_get_event_clock".}
-proc gpiodinfoeventfree*(event: ptr Gpiodinfoevent): void {.cdecl,
+proc gpiod_info_event_free*(event: ptr Gpiod_info_event): void {.cdecl,
     importc: "gpiod_info_event_free".}
-proc gpiodinfoeventgeteventtype*(event: ptr Gpiodinfoevent): Gpiodinfoeventtype {.
+proc gpiod_info_event_get_event_type*(event: ptr Gpiod_info_event): Gpiod_info_event_type {.
     cdecl, importc: "gpiod_info_event_get_event_type".}
-proc gpiodinfoeventgettimestampns*(event: ptr Gpiodinfoevent): uint64 {.cdecl,
-    importc: "gpiod_info_event_get_timestamp_ns".}
-proc gpiodinfoeventgetlineinfo*(event: ptr Gpiodinfoevent): ptr Gpiodlineinfo {.
+proc gpiod_info_event_get_timestamp_ns*(event: ptr Gpiod_info_event): uint64 {.
+    cdecl, importc: "gpiod_info_event_get_timestamp_ns".}
+proc gpiod_info_event_get_line_info*(event: ptr Gpiod_info_event): ptr Gpiod_line_info {.
     cdecl, importc: "gpiod_info_event_get_line_info".}
-proc gpiodlinesettingsnew*(): ptr Gpiodlinesettings {.cdecl,
+proc gpiod_line_settings_new*(): ptr Gpiod_line_settings {.cdecl,
     importc: "gpiod_line_settings_new".}
-proc gpiodlinesettingsfree*(settings: ptr Gpiodlinesettings): void {.cdecl,
+proc gpiod_line_settings_free*(settings: ptr Gpiod_line_settings): void {.cdecl,
     importc: "gpiod_line_settings_free".}
-proc gpiodlinesettingsreset*(settings: ptr Gpiodlinesettings): void {.cdecl,
-    importc: "gpiod_line_settings_reset".}
-proc gpiodlinesettingscopy*(settings: ptr Gpiodlinesettings): ptr Gpiodlinesettings {.
+proc gpiod_line_settings_reset*(settings: ptr Gpiod_line_settings): void {.
+    cdecl, importc: "gpiod_line_settings_reset".}
+proc gpiod_line_settings_copy*(settings: ptr Gpiod_line_settings): ptr Gpiod_line_settings {.
     cdecl, importc: "gpiod_line_settings_copy".}
-proc gpiodlinesettingssetdirection*(settings: ptr Gpiodlinesettings;
-                                    direction: Gpiodlinedirection): cint {.
+proc gpiod_line_settings_set_direction*(settings: ptr Gpiod_line_settings;
+                                        direction: Gpiod_line_direction): cint {.
     cdecl, importc: "gpiod_line_settings_set_direction".}
-proc gpiodlinesettingsgetdirection*(settings: ptr Gpiodlinesettings): Gpiodlinedirection {.
+proc gpiod_line_settings_get_direction*(settings: ptr Gpiod_line_settings): Gpiod_line_direction {.
     cdecl, importc: "gpiod_line_settings_get_direction".}
-proc gpiodlinesettingssetedgedetection*(settings: ptr Gpiodlinesettings;
-                                        edge: Gpiodlineedge): cint {.cdecl,
-    importc: "gpiod_line_settings_set_edge_detection".}
-proc gpiodlinesettingsgetedgedetection*(settings: ptr Gpiodlinesettings): Gpiodlineedge {.
+proc gpiod_line_settings_set_edge_detection*(settings: ptr Gpiod_line_settings;
+    edge: Gpiod_line_edge): cint {.cdecl, importc: "gpiod_line_settings_set_edge_detection".}
+proc gpiod_line_settings_get_edge_detection*(settings: ptr Gpiod_line_settings): Gpiod_line_edge {.
     cdecl, importc: "gpiod_line_settings_get_edge_detection".}
-proc gpiodlinesettingssetbias*(settings: ptr Gpiodlinesettings;
-                               bias: Gpiodlinebias): cint {.cdecl,
+proc gpiod_line_settings_set_bias*(settings: ptr Gpiod_line_settings;
+                                   bias: Gpiod_line_bias): cint {.cdecl,
     importc: "gpiod_line_settings_set_bias".}
-proc gpiodlinesettingsgetbias*(settings: ptr Gpiodlinesettings): Gpiodlinebias {.
+proc gpiod_line_settings_get_bias*(settings: ptr Gpiod_line_settings): Gpiod_line_bias {.
     cdecl, importc: "gpiod_line_settings_get_bias".}
-proc gpiodlinesettingssetdrive*(settings: ptr Gpiodlinesettings;
-                                drive: Gpiodlinedrive): cint {.cdecl,
+proc gpiod_line_settings_set_drive*(settings: ptr Gpiod_line_settings;
+                                    drive: Gpiod_line_drive): cint {.cdecl,
     importc: "gpiod_line_settings_set_drive".}
-proc gpiodlinesettingsgetdrive*(settings: ptr Gpiodlinesettings): Gpiodlinedrive {.
+proc gpiod_line_settings_get_drive*(settings: ptr Gpiod_line_settings): Gpiod_line_drive {.
     cdecl, importc: "gpiod_line_settings_get_drive".}
-proc gpiodlinesettingssetactivelow*(settings: ptr Gpiodlinesettings;
-                                    activelow: bool): void {.cdecl,
-    importc: "gpiod_line_settings_set_active_low".}
-proc gpiodlinesettingsgetactivelow*(settings: ptr Gpiodlinesettings): bool {.
+proc gpiod_line_settings_set_active_low*(settings: ptr Gpiod_line_settings;
+    active_low: bool): void {.cdecl,
+                              importc: "gpiod_line_settings_set_active_low".}
+proc gpiod_line_settings_get_active_low*(settings: ptr Gpiod_line_settings): bool {.
     cdecl, importc: "gpiod_line_settings_get_active_low".}
-proc gpiodlinesettingssetdebounceperiodus*(settings: ptr Gpiodlinesettings;
-    period: culong): void {.cdecl, importc: "gpiod_line_settings_set_debounce_period_us".}
-proc gpiodlinesettingsgetdebounceperiodus*(settings: ptr Gpiodlinesettings): culong {.
-    cdecl, importc: "gpiod_line_settings_get_debounce_period_us".}
-proc gpiodlinesettingsseteventclock*(settings: ptr Gpiodlinesettings;
-                                     eventclock: Gpiodlineclock): cint {.cdecl,
+proc gpiod_line_settings_set_debounce_period_us*(
+    settings: ptr Gpiod_line_settings; period: culong): void {.cdecl,
+    importc: "gpiod_line_settings_set_debounce_period_us".}
+proc gpiod_line_settings_get_debounce_period_us*(
+    settings: ptr Gpiod_line_settings): culong {.cdecl,
+    importc: "gpiod_line_settings_get_debounce_period_us".}
+proc gpiod_line_settings_set_event_clock*(settings: ptr Gpiod_line_settings;
+    event_clock: Gpiod_line_clock): cint {.cdecl,
     importc: "gpiod_line_settings_set_event_clock".}
-proc gpiodlinesettingsgeteventclock*(settings: ptr Gpiodlinesettings): Gpiodlineclock {.
+proc gpiod_line_settings_get_event_clock*(settings: ptr Gpiod_line_settings): Gpiod_line_clock {.
     cdecl, importc: "gpiod_line_settings_get_event_clock".}
-proc gpiodlinesettingssetoutputvalue*(settings: ptr Gpiodlinesettings;
-                                      value: Gpiodlinevalue): cint {.cdecl,
-    importc: "gpiod_line_settings_set_output_value".}
-proc gpiodlinesettingsgetoutputvalue*(settings: ptr Gpiodlinesettings): Gpiodlinevalue {.
+proc gpiod_line_settings_set_output_value*(settings: ptr Gpiod_line_settings;
+    value: Gpiod_line_value): cint {.cdecl, importc: "gpiod_line_settings_set_output_value".}
+proc gpiod_line_settings_get_output_value*(settings: ptr Gpiod_line_settings): Gpiod_line_value {.
     cdecl, importc: "gpiod_line_settings_get_output_value".}
-proc gpiodlineconfignew*(): ptr Gpiodlineconfig {.cdecl,
+proc gpiod_line_config_new*(): ptr Gpiod_line_config {.cdecl,
     importc: "gpiod_line_config_new".}
-proc gpiodlineconfigfree*(config: ptr Gpiodlineconfig): void {.cdecl,
+proc gpiod_line_config_free*(config: ptr Gpiod_line_config): void {.cdecl,
     importc: "gpiod_line_config_free".}
-proc gpiodlineconfigreset*(config: ptr Gpiodlineconfig): void {.cdecl,
+proc gpiod_line_config_reset*(config: ptr Gpiod_line_config): void {.cdecl,
     importc: "gpiod_line_config_reset".}
-proc gpiodlineconfigaddlinesettings*(config: ptr Gpiodlineconfig;
-                                     offsets: ptr cuint; numoffsets: csize_t;
-                                     settings: ptr Gpiodlinesettings): cint {.
+proc gpiod_line_config_add_line_settings*(config: ptr Gpiod_line_config;
+    offsets: ptr cuint; num_offsets: csize_t; settings: ptr Gpiod_line_settings): cint {.
     cdecl, importc: "gpiod_line_config_add_line_settings".}
-proc gpiodlineconfiggetlinesettings*(config: ptr Gpiodlineconfig; offset: cuint): ptr Gpiodlinesettings {.
-    cdecl, importc: "gpiod_line_config_get_line_settings".}
-proc gpiodlineconfigsetoutputvalues*(config: ptr Gpiodlineconfig;
-                                     values: ptr Gpiodlinevalue;
-                                     numvalues: csize_t): cint {.cdecl,
+proc gpiod_line_config_get_line_settings*(config: ptr Gpiod_line_config;
+    offset: cuint): ptr Gpiod_line_settings {.cdecl,
+    importc: "gpiod_line_config_get_line_settings".}
+proc gpiod_line_config_set_output_values*(config: ptr Gpiod_line_config;
+    values: ptr Gpiod_line_value; num_values: csize_t): cint {.cdecl,
     importc: "gpiod_line_config_set_output_values".}
-proc gpiodlineconfiggetnumconfiguredoffsets*(config: ptr Gpiodlineconfig): csize_t {.
+proc gpiod_line_config_get_num_configured_offsets*(config: ptr Gpiod_line_config): csize_t {.
     cdecl, importc: "gpiod_line_config_get_num_configured_offsets".}
-proc gpiodlineconfiggetconfiguredoffsets*(config: ptr Gpiodlineconfig;
-    offsets: ptr cuint; maxoffsets: csize_t): csize_t {.cdecl,
+proc gpiod_line_config_get_configured_offsets*(config: ptr Gpiod_line_config;
+    offsets: ptr cuint; max_offsets: csize_t): csize_t {.cdecl,
     importc: "gpiod_line_config_get_configured_offsets".}
-proc gpiodrequestconfignew*(): ptr Gpiodrequestconfig {.cdecl,
+proc gpiod_request_config_new*(): ptr Gpiod_request_config {.cdecl,
     importc: "gpiod_request_config_new".}
-proc gpiodrequestconfigfree*(config: ptr Gpiodrequestconfig): void {.cdecl,
+proc gpiod_request_config_free*(config: ptr Gpiod_request_config): void {.cdecl,
     importc: "gpiod_request_config_free".}
-proc gpiodrequestconfigsetconsumer*(config: ptr Gpiodrequestconfig;
-                                    consumer: cstring): void {.cdecl,
+proc gpiod_request_config_set_consumer*(config: ptr Gpiod_request_config;
+                                        consumer: cstring): void {.cdecl,
     importc: "gpiod_request_config_set_consumer".}
-proc gpiodrequestconfiggetconsumer*(config: ptr Gpiodrequestconfig): cstring {.
+proc gpiod_request_config_get_consumer*(config: ptr Gpiod_request_config): cstring {.
     cdecl, importc: "gpiod_request_config_get_consumer".}
-proc gpiodrequestconfigseteventbuffersize*(config: ptr Gpiodrequestconfig;
-    eventbuffersize: csize_t): void {.cdecl, importc: "gpiod_request_config_set_event_buffer_size".}
-proc gpiodrequestconfiggeteventbuffersize*(config: ptr Gpiodrequestconfig): csize_t {.
-    cdecl, importc: "gpiod_request_config_get_event_buffer_size".}
-proc gpiodlinerequestrelease*(request: ptr Gpiodlinerequest): void {.cdecl,
+proc gpiod_request_config_set_event_buffer_size*(
+    config: ptr Gpiod_request_config; event_buffer_size: csize_t): void {.cdecl,
+    importc: "gpiod_request_config_set_event_buffer_size".}
+proc gpiod_request_config_get_event_buffer_size*(
+    config: ptr Gpiod_request_config): csize_t {.cdecl,
+    importc: "gpiod_request_config_get_event_buffer_size".}
+proc gpiod_line_request_release*(request: ptr Gpiod_line_request): void {.cdecl,
     importc: "gpiod_line_request_release".}
-proc gpiodlinerequestgetchipname*(request: ptr Gpiodlinerequest): cstring {.
+proc gpiod_line_request_get_chip_name*(request: ptr Gpiod_line_request): cstring {.
     cdecl, importc: "gpiod_line_request_get_chip_name".}
-proc gpiodlinerequestgetnumrequestedlines*(request: ptr Gpiodlinerequest): csize_t {.
+proc gpiod_line_request_get_num_requested_lines*(request: ptr Gpiod_line_request): csize_t {.
     cdecl, importc: "gpiod_line_request_get_num_requested_lines".}
-proc gpiodlinerequestgetrequestedoffsets*(request: ptr Gpiodlinerequest;
-    offsets: ptr cuint; maxoffsets: csize_t): csize_t {.cdecl,
+proc gpiod_line_request_get_requested_offsets*(request: ptr Gpiod_line_request;
+    offsets: ptr cuint; max_offsets: csize_t): csize_t {.cdecl,
     importc: "gpiod_line_request_get_requested_offsets".}
-proc gpiodlinerequestgetvalue*(request: ptr Gpiodlinerequest; offset: cuint): Gpiodlinevalue {.
-    cdecl, importc: "gpiod_line_request_get_value".}
-proc gpiodlinerequestgetvaluessubset*(request: ptr Gpiodlinerequest;
-                                      numvalues: csize_t; offsets: ptr cuint;
-                                      values: ptr Gpiodlinevalue): cint {.cdecl,
-    importc: "gpiod_line_request_get_values_subset".}
-proc gpiodlinerequestgetvalues*(request: ptr Gpiodlinerequest;
-                                values: ptr Gpiodlinevalue): cint {.cdecl,
+proc gpiod_line_request_get_value*(request: ptr Gpiod_line_request;
+                                   offset: cuint): Gpiod_line_value {.cdecl,
+    importc: "gpiod_line_request_get_value".}
+proc gpiod_line_request_get_values_subset*(request: ptr Gpiod_line_request;
+    num_values: csize_t; offsets: ptr cuint; values: ptr Gpiod_line_value): cint {.
+    cdecl, importc: "gpiod_line_request_get_values_subset".}
+proc gpiod_line_request_get_values*(request: ptr Gpiod_line_request;
+                                    values: ptr Gpiod_line_value): cint {.cdecl,
     importc: "gpiod_line_request_get_values".}
-proc gpiodlinerequestsetvalue*(request: ptr Gpiodlinerequest; offset: cuint;
-                               value: Gpiodlinevalue): cint {.cdecl,
-    importc: "gpiod_line_request_set_value".}
-proc gpiodlinerequestsetvaluessubset*(request: ptr Gpiodlinerequest;
-                                      numvalues: csize_t; offsets: ptr cuint;
-                                      values: ptr Gpiodlinevalue): cint {.cdecl,
-    importc: "gpiod_line_request_set_values_subset".}
-proc gpiodlinerequestsetvalues*(request: ptr Gpiodlinerequest;
-                                values: ptr Gpiodlinevalue): cint {.cdecl,
+proc gpiod_line_request_set_value*(request: ptr Gpiod_line_request;
+                                   offset: cuint; value: Gpiod_line_value): cint {.
+    cdecl, importc: "gpiod_line_request_set_value".}
+proc gpiod_line_request_set_values_subset*(request: ptr Gpiod_line_request;
+    num_values: csize_t; offsets: ptr cuint; values: ptr Gpiod_line_value): cint {.
+    cdecl, importc: "gpiod_line_request_set_values_subset".}
+proc gpiod_line_request_set_values*(request: ptr Gpiod_line_request;
+                                    values: ptr Gpiod_line_value): cint {.cdecl,
     importc: "gpiod_line_request_set_values".}
-proc gpiodlinerequestreconfigurelines*(request: ptr Gpiodlinerequest;
-                                       config: ptr Gpiodlineconfig): cint {.
-    cdecl, importc: "gpiod_line_request_reconfigure_lines".}
-proc gpiodlinerequestgetfd*(request: ptr Gpiodlinerequest): cint {.cdecl,
+proc gpiod_line_request_reconfigure_lines*(request: ptr Gpiod_line_request;
+    config: ptr Gpiod_line_config): cint {.cdecl,
+    importc: "gpiod_line_request_reconfigure_lines".}
+proc gpiod_line_request_get_fd*(request: ptr Gpiod_line_request): cint {.cdecl,
     importc: "gpiod_line_request_get_fd".}
-proc gpiodlinerequestwaitedgeevents*(request: ptr Gpiodlinerequest;
-                                     timeoutns: int64): cint {.cdecl,
-    importc: "gpiod_line_request_wait_edge_events".}
-proc gpiodlinerequestreadedgeevents*(request: ptr Gpiodlinerequest;
-                                     buffer: ptr Gpiodedgeeventbuffer;
-                                     maxevents: csize_t): cint {.cdecl,
+proc gpiod_line_request_wait_edge_events*(request: ptr Gpiod_line_request;
+    timeout_ns: int64): cint {.cdecl,
+                               importc: "gpiod_line_request_wait_edge_events".}
+proc gpiod_line_request_read_edge_events*(request: ptr Gpiod_line_request;
+    buffer: ptr Gpiod_edge_event_buffer; max_events: csize_t): cint {.cdecl,
     importc: "gpiod_line_request_read_edge_events".}
-proc gpiodedgeeventfree*(event: ptr Gpiodedgeevent): void {.cdecl,
+proc gpiod_edge_event_free*(event: ptr Gpiod_edge_event): void {.cdecl,
     importc: "gpiod_edge_event_free".}
-proc gpiodedgeeventcopy*(event: ptr Gpiodedgeevent): ptr Gpiodedgeevent {.cdecl,
-    importc: "gpiod_edge_event_copy".}
-proc gpiodedgeeventgeteventtype*(event: ptr Gpiodedgeevent): Gpiodedgeeventtype {.
+proc gpiod_edge_event_copy*(event: ptr Gpiod_edge_event): ptr Gpiod_edge_event {.
+    cdecl, importc: "gpiod_edge_event_copy".}
+proc gpiod_edge_event_get_event_type*(event: ptr Gpiod_edge_event): Gpiod_edge_event_type {.
     cdecl, importc: "gpiod_edge_event_get_event_type".}
-proc gpiodedgeeventgettimestampns*(event: ptr Gpiodedgeevent): uint64 {.cdecl,
-    importc: "gpiod_edge_event_get_timestamp_ns".}
-proc gpiodedgeeventgetlineoffset*(event: ptr Gpiodedgeevent): cuint {.cdecl,
-    importc: "gpiod_edge_event_get_line_offset".}
-proc gpiodedgeeventgetglobalseqno*(event: ptr Gpiodedgeevent): culong {.cdecl,
-    importc: "gpiod_edge_event_get_global_seqno".}
-proc gpiodedgeeventgetlineseqno*(event: ptr Gpiodedgeevent): culong {.cdecl,
-    importc: "gpiod_edge_event_get_line_seqno".}
-proc gpiodedgeeventbuffernew*(capacity: csize_t): ptr Gpiodedgeeventbuffer {.
+proc gpiod_edge_event_get_timestamp_ns*(event: ptr Gpiod_edge_event): uint64 {.
+    cdecl, importc: "gpiod_edge_event_get_timestamp_ns".}
+proc gpiod_edge_event_get_line_offset*(event: ptr Gpiod_edge_event): cuint {.
+    cdecl, importc: "gpiod_edge_event_get_line_offset".}
+proc gpiod_edge_event_get_global_seqno*(event: ptr Gpiod_edge_event): culong {.
+    cdecl, importc: "gpiod_edge_event_get_global_seqno".}
+proc gpiod_edge_event_get_line_seqno*(event: ptr Gpiod_edge_event): culong {.
+    cdecl, importc: "gpiod_edge_event_get_line_seqno".}
+proc gpiod_edge_event_buffer_new*(capacity: csize_t): ptr Gpiod_edge_event_buffer {.
     cdecl, importc: "gpiod_edge_event_buffer_new".}
-proc gpiodedgeeventbuffergetcapacity*(buffer: ptr Gpiodedgeeventbuffer): csize_t {.
+proc gpiod_edge_event_buffer_get_capacity*(buffer: ptr Gpiod_edge_event_buffer): csize_t {.
     cdecl, importc: "gpiod_edge_event_buffer_get_capacity".}
-proc gpiodedgeeventbufferfree*(buffer: ptr Gpiodedgeeventbuffer): void {.cdecl,
-    importc: "gpiod_edge_event_buffer_free".}
-proc gpiodedgeeventbuffergetevent*(buffer: ptr Gpiodedgeeventbuffer;
-                                   index: culong): ptr Gpiodedgeevent {.cdecl,
-    importc: "gpiod_edge_event_buffer_get_event".}
-proc gpiodedgeeventbuffergetnumevents*(buffer: ptr Gpiodedgeeventbuffer): csize_t {.
+proc gpiod_edge_event_buffer_free*(buffer: ptr Gpiod_edge_event_buffer): void {.
+    cdecl, importc: "gpiod_edge_event_buffer_free".}
+proc gpiod_edge_event_buffer_get_event*(buffer: ptr Gpiod_edge_event_buffer;
+                                        index: culong): ptr Gpiod_edge_event {.
+    cdecl, importc: "gpiod_edge_event_buffer_get_event".}
+proc gpiod_edge_event_buffer_get_num_events*(buffer: ptr Gpiod_edge_event_buffer): csize_t {.
     cdecl, importc: "gpiod_edge_event_buffer_get_num_events".}
-proc gpiodisgpiochipdevice*(path: cstring): bool {.cdecl,
+proc gpiod_is_gpiochip_device*(path: cstring): bool {.cdecl,
     importc: "gpiod_is_gpiochip_device".}
-proc gpiodapiversion*(): cstring {.cdecl, importc: "gpiod_api_version".}
+proc gpiod_api_version*(): cstring {.cdecl, importc: "gpiod_api_version".}
