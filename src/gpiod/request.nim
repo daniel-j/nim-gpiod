@@ -1,35 +1,38 @@
-import std/tables
-import ./libgpiod
+import std/tables, std/strformat
 import ./exception
-import ./line
+import ./line_info
+import ./line_config
 import ./request_config
-export exception, line, request_config
+import ./edge_event
+import ./libgpiod
+
+export exception, tables, line_info, line_config, request_config, edge_event
 
 type
   Request* = object
-    request*: ptr GpiodLineRequest
+    request: ptr GpiodLineRequest
 
 proc newRequest*(request: ptr GpiodLineRequest): Request =
   result.request = request
 
+proc `=copy`(dest: var Request; source: Request) {.error.}
 proc `=destroy`*(self: var Request) =
+  echo "free line request"
   gpiod_line_request_release(self.request)
 
-proc getChipName*(self: Request): string =
-  let name = gpiod_line_request_get_chip_name(self.request)
-  return $name
+proc chipName*(self: Request): string =
+  return $gpiod_line_request_get_chip_name(self.request)
 
-proc getNumLines*(self: Request): uint =
-  return gpiod_line_request_get_num_requested_lines(self.request)
+proc numLines*(self: Request): int =
+  return gpiod_line_request_get_num_requested_lines(self.request).int
 
 proc getOffsets*(self: Request): seq[Offset] =
-  let numLines = self.getNumLines()
-  var offsets = newSeq[Offset](numLines)
-  let numOffsets = gpiod_line_request_get_requested_offsets(self.request, offsets[0].addr, numLines)
-  offsets.setLen(numOffsets)
-  return offsets
+  result = newSeq[Offset](self.numLines())
+  if result.len > 0:
+    let numOffsets = gpiod_line_request_get_requested_offsets(self.request, result[0].addr, result.len.csize_t)
+    result.setLen(numOffsets)
 
-proc getRawFd*(self: Request): int =
+proc rawFd*(self: Request): int =
   return gpiod_line_request_get_fd(self.request)
 
 proc getValue*(self: Request; offset: Offset): Value =
@@ -38,7 +41,7 @@ proc getValue*(self: Request; offset: Offset): Value =
     raise newException(LineRequestGetValueError, "Failed to get line request value")
   return value
 
-proc valuesSubset*(self: Request; offsets: openarray[Offset]): Table[Offset, Value] =
+proc getValues*(self: Request; offsets: openarray[Offset]): Table[Offset, Value] =
   var values = newSeq[Value](offsets.len)
   let ret = gpiod_line_request_get_values_subset(self.request, offsets.len.csize_t, offsets[0].unsafeAddr, values[0].addr)
 
@@ -48,8 +51,8 @@ proc valuesSubset*(self: Request; offsets: openarray[Offset]): Table[Offset, Val
   for i, v in values:
     result[offsets[i]] = v
 
-proc values*(self: Request): Table[Offset, Value] =
-  return self.valuesSubset(self.getOffsets())
+proc getValues*(self: Request): Table[Offset, Value] =
+  return self.getValues(self.getOffsets())
 
 proc setValue*(self: Request; offset: Offset; value: Value) =
   let ret = gpiod_line_request_set_value(self.request, offset, value)
@@ -72,7 +75,7 @@ proc setValuesSubset*(self: Request; map: Table[Offset, Value]) =
     raise newException(LineRequestSetValSubsetError, "Failed to set values")
 
 proc setValues*(self: Request; values: openarray[Value]) =
-  if values.len.uint != self.getNumLines():
+  if values.len != self.numLines():
     raise newException(ValueError, "Invalid arguments")
 
   let ret = gpiod_line_request_set_values(self.request, values[0].unsafeAddr)
@@ -81,7 +84,7 @@ proc setValues*(self: Request; values: openarray[Value]) =
     raise newException(LineRequestSetValError, "Failed to set values")
 
 proc reconfigureLines*(self: Request; lconfig: LineConfig) =
-  let ret = gpiod_line_request_reconfigure_lines(self.request, lconfig.config)
+  let ret = gpiod_line_request_reconfigure_lines(self.request, lconfig.getPtr())
 
   if ret < 0:
     raise newException(LineRequestReconfigLinesError, "Failed to reconfigure lines")
@@ -93,3 +96,8 @@ proc waitEdgeEvents*(self: Request; timeout: Duration): bool =
     raise newException(LineRequestWaitEdgeEventError, "Failed to wait for edge events")
   return ret > 0
 
+proc readEdgeEvents*(self: Request; buffer: EdgeEventBuffer; maxEvents: int): int =
+  return gpiod_line_request_read_edge_events(self.request, buffer.getPtr(), maxEvents.csize_t)
+
+proc `$`*(self: Request): string =
+  return &"Request(chip: {self.chipName}, offsets: {self.getOffsets()}, rawFd: {self.rawFd}, values: {self.getValues()})"

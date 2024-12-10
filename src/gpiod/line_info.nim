@@ -14,7 +14,7 @@ type
   Clock* = GpiodLineClock
 
   LineInfo* = object
-    offset*: int
+    offset*: Offset
     name*: string
     used*: bool
     consumer*: string
@@ -27,15 +27,9 @@ type
     debounced*: bool
     debouncePeriod*: Duration
 
-  LineConfig* = object
-    config*: ptr GpiodLineConfig
-
-proc `=destroy`*(self: var LineConfig) =
-  gpiod_line_config_free(self.config)
-
 proc makeLineInfo*(info: ptr GpiodLineInfo): LineInfo =
   if info.isNil: return
-  result.offset = gpiod_line_info_get_offset(info).int
+  result.offset = gpiod_line_info_get_offset(info)
   result.name = $gpiod_line_info_get_name(info)
   result.used = gpiod_line_info_is_used(info)
   result.consumer = $gpiod_line_info_get_consumer(info)
@@ -47,9 +41,3 @@ proc makeLineInfo*(info: ptr GpiodLineInfo): LineInfo =
   result.eventClock = gpiod_line_info_get_event_clock(info)
   result.debounced = gpiod_line_info_is_debounced(info)
   result.debouncePeriod = initDuration(microseconds = gpiod_line_info_get_debounce_period_us(info).int64)
-
-proc newLineConfig*(): LineConfig =
-  result.config = gpiod_line_config_new()
-  if result.config.isNil:
-    raise newException(LineConfigNewError, "Failed to create line config")
-

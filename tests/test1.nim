@@ -7,7 +7,7 @@ proc main() =
 
     echo chip.getInfo()
 
-  except OpenChipError:
+  except ChipOpenError:
     echo "Couldn't open chip!"
 
 main()
