@@ -37,7 +37,7 @@ type
     chip*: Chip
     req*: Request
     pixels*: Pixels
-    eventThread: Thread[Request]
+    # eventThread: Thread[Request]
 
   Channel* = enum
     ChannelLeft
@@ -109,24 +109,24 @@ proc setup(chip: Chip): Request =
 
   return chip.requestLines(reqCfg, lineCfg)
 
-proc eventThreadFunc(req: Request) {.thread.} =
-  var eventBuffer = newEdgeEventBuffer(10)
-  echo "waiting for events"
-  while true:
-    let eventPending = req.waitEdgeEvents(initDuration(seconds = 5))
-    if not eventPending: continue
-    echo "events!"
-    let ln = req.readEdgeEvents(eventBuffer, eventBuffer.capacity)
-    echo (ln, eventBuffer.len)
-    for i in 0..<eventBuffer.len:
-      echo eventBuffer[i]
+# proc eventThreadFunc(req: Request) {.thread.} =
+#   var eventBuffer = newEdgeEventBuffer(10)
+#   echo "waiting for events"
+#   while true:
+#     let eventPending = req.waitEdgeEvents(initDuration(seconds = 5))
+#     if not eventPending: continue
+#     echo "events!"
+#     let ln = req.readEdgeEvents(eventBuffer, eventBuffer.capacity)
+#     echo (ln, eventBuffer.len)
+#     for i in 0..<eventBuffer.len:
+#       echo eventBuffer[i]
 
 proc initPhatBeat*(): PhatBeat =
   result.chip = Chip.open("/dev/gpiochip0")
   result.req = setup(result.chip)
   result.pixels = initPixels()
 
-  createThread(result.eventThread, eventThreadFunc, result.req)
+  # createThread(result.eventThread, eventThreadFunc, result.req)
 
 iterator pixelChannels*(self: var PhatBeat; channel: Channel = ChannelBoth): var Pixel =
   let lowPixel = if channel == ChannelRight: numChannelPixels else: 0
