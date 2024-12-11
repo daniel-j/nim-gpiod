@@ -74,6 +74,18 @@ proc setValuesSubset*(self: Request; map: Table[Offset, Value]) =
   if ret < 0:
     raise newException(LineRequestSetValSubsetError, "Failed to set values")
 
+proc setValuesSubset*(self: Request; offsets: openarray[Offset], values: openarray[Value]) =
+  assert(offsets.len == values.len and offsets.len > 0)
+  let ret = gpiod_line_request_set_values_subset(
+    self.request,
+    offsets.len.cuint,
+    offsets[0].unsafeAddr,
+    values[0].unsafeAddr
+  )
+
+  if ret < 0:
+    raise newException(LineRequestSetValSubsetError, "Failed to set values")
+
 proc setValues*(self: Request; values: openarray[Value]) =
   if values.len != self.numLines():
     raise newException(ValueError, "Invalid arguments")

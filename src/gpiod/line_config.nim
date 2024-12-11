@@ -45,8 +45,8 @@ proc getNumOffsets*(self: LineConfig): int {.inline.} =
 proc getOffsets*(self: LineConfig): seq[Offset] =
   result = newSeq[Offset](self.getNumOffsets())
   if result.len > 0:
-    let l = gpiod_line_config_get_configured_offsets(self.config, result[0].addr, result.len.csize_t)
-    result.setLen(l)
+    let ln = gpiod_line_config_get_configured_offsets(self.config, result[0].addr, result.len.csize_t)
+    result.setLen(ln)
 
 proc `$`*(self: LineConfig): string =
   return &"LineConfig(numOffsets: {self.getNumOffsets()}, offsets: {self.getOffsets()})"

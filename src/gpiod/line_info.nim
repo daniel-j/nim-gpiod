@@ -27,6 +27,9 @@ type
     debounced*: bool
     debouncePeriod*: Duration
 
+converter toValue*(b: bool): Value =
+  return if b: GPIOD_LINE_VALUE_ACTIVE else: GPIOD_LINE_VALUE_INACTIVE
+
 proc makeLineInfo*(info: ptr GpiodLineInfo): LineInfo =
   if info.isNil: return
   result.offset = gpiod_line_info_get_offset(info)
