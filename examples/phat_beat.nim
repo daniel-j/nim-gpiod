@@ -51,9 +51,11 @@ proc setNanosleep(ns: int64): Timespec =
 var dur = setNanosleep(clockSleepNs)
 var rem: Timespec
 
-proc nanosleep() {.inline.} =
-  discard posix.nanosleep(dur, rem)
-
+template nanosleep() =
+  #discard posix.nanosleep(dur, rem)
+  # sleep(0)
+  #asm "nop;"
+  discard
 
 proc initPixels(): Pixels =
   for i in 0..<result.len:
@@ -148,13 +150,41 @@ proc setAll*(self: var PhatBeat; p: Pixel; channel: Channel = ChannelBoth) =
   for pixel in self.pixelChannels(channel):
     pixel = p
 
-proc setPixel*(self: var PhatBeat; index: int; p: Pixel) =
+proc setPixel*(self: var PhatBeat; index: int; p: Pixel; channel: Channel = ChannelLeft) =
+  var index = if channel == ChannelRight: index + numChannelPixels else: index
   self.pixels[index] = p
+  if channel == ChannelBoth:
+    self.pixels[index + numChannelPixels] = p
+
+proc setBar*(self: var PhatBeat; value: float; p: Pixel; channel: Channel = ChannelBoth) =
+  let midpoint = value * numChannelPixels
+  for i in 0..<numChannelPixels:
+    var pixel = Pixel()
+    if i < int(midpoint):
+      pixel = p
+    elif i < int(midpoint + 1):
+      pixel = p
+      let level = midpoint - float(int(midpoint))
+      pixel.r = uint8 pixel.r.float * level
+      pixel.g = uint8 pixel.g.float * level
+      pixel.b = uint8 pixel.b.float * level
+    else:
+      discard
+    self.setPixel(i, pixel, channel)
+
 
 proc show*(self: PhatBeat) =
+  # let st = now()
   startFrame(self.req)
 
-  for i in countdown(self.pixels.len - 1, 0):
+  for i in countdown(self.pixels.len - 1, self.pixels.len div 2):
+    let pixel = self.pixels[i]
+    writeByte(self.req, 0b11100000.byte or pixel.brightness)
+    writeByte(self.req, pixel.b)
+    writeByte(self.req, pixel.g)
+    writeByte(self.req, pixel.r)
+
+  for i in countup(0, self.pixels.len div 2 - 1):
     let pixel = self.pixels[i]
     writeByte(self.req, 0b11100000.byte or pixel.brightness)
     writeByte(self.req, pixel.b)
@@ -162,6 +192,7 @@ proc show*(self: PhatBeat) =
     writeByte(self.req, pixel.r)
 
   endFrame(self.req)
+  # echo "show: ", now() - st
 
 
 
@@ -172,6 +203,8 @@ proc show*(self: PhatBeat) =
 
 import std/times
 import std/math
+import std/streams
+import std/strutils
 
 type
   Hsv* = object
@@ -209,10 +242,48 @@ func toPixel*(hsv: Hsv): Pixel =
     else: return constructPixel(0, 0, 0)
 
 proc main() =
-  var beat = initPhatBeat()
 
-  beat.pixels[1].r = 255
-  beat.show()
+  # $ gcc -Wall examples/pw-capture.c -o examples/pw-capture $(pkg-config --cflags --libs libpipewire-0.3) -lm
+  # $ examples/pw-capture | nim c -r examples/phat_beat
+
+  var vuf = newFileStream("/dev/stdin")
+  defer: close(vuf)
+
+  var peaks: array[2, float]
+  var beat: PhatBeat
+  try:
+    beat = initPhatBeat()
+  except:
+    discard
+
+  let green = Pixel(
+    g: 255,
+    brightness: 1
+  )
+
+  var lastUpdate = getTime()
+
+  while not vuf.atEnd:
+    let line = vuf.readLine().split(", ")
+    if line.len != 4: continue
+    let tv_sec = parseInt(line[0])
+    let tv_usec = parseInt(line[1])
+    let channel = parseInt(line[2])
+    var peak = parseFloat(line[3])
+    peak = clamp((20 * log10(peak) + 48) / 48, 0, 1)
+    peaks[channel] = max(peak, peaks[channel])
+    if channel == 0:
+      beat.setBar(peaks[channel], green, ChannelLeft)
+    if channel == 1:
+      beat.setBar(peaks[channel], green, ChannelRight)
+      echo peaks
+      let t = initTime(tv_sec, tv_usec * 1_000)
+      if t - lastUpdate >= initDuration(milliseconds = 5):
+        lastUpdate = getTime()
+        echo "update leds"
+        beat.show()
+        #sleep(300)
+    peaks[channel] *= 0.93
 
 
   const SPEED = 50
