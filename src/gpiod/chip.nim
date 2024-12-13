@@ -18,16 +18,16 @@ type
     label*: string
     numLines*: int
 
-proc open*(_: typedesc[Chip]; path: string): Chip =
-  result.chip = gpiod_chip_open(path.cstring)
-  if result.chip.isNil:
-    raise newException(ChipOpenError, "Error opening chip: " & path)
-
 proc `=copy`(dest: var Chip; source: Chip) {.error.}
 proc `=destroy`(self: var Chip) =
   echo "free chip"
   gpiod_chip_close(self.chip)
   # self.chip = nil
+
+proc openChip*(path: string): Chip =
+  result.chip = gpiod_chip_open(path.cstring)
+  if result.chip.isNil:
+    raise newException(ChipOpenError, "Error opening chip: " & path)
 
 proc path*(self: Chip): string {.inline.} =
   return $gpiod_chip_get_path(self.chip)
@@ -44,6 +44,9 @@ proc getInfo*(self: Chip): ChipInfo =
   result.name = $gpiod_chip_info_get_name(chipInfo)
   result.label = $gpiod_chip_info_get_label(chipInfo)
   result.numLines = gpiod_chip_info_get_num_lines(chipInfo).int
+
+proc `$`*(self: Chip): string =
+  return &"Chip(path: {self.path}, rawFd: {self.rawFd}, info: {self.getInfo()})"
 
 proc getLineInfo*(self: Chip; offset: Offset): LineInfo =
   let info = gpiod_chip_get_line_info(self.chip, offset.cuint)
@@ -87,9 +90,7 @@ proc requestLines*(self: Chip; requestConfig: RequestConfig; lineConfig: LineCon
   let request = gpiod_chip_request_lines(self.chip, requestConfig.getPtr(), lineConfig.getPtr())
 
   if request.isNil:
-    raise newException(ChipRequestLinesError, "Failed to request lines from chip")
+    raise newException(ChipRequestLinesError, "Failed to request lines from chip - is it busy?")
 
   return newRequest(request)
 
-proc `$`*(self: Chip): string =
-  return &"Chip(path: {self.path}, rawFd: {self.rawFd})"

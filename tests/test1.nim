@@ -3,7 +3,7 @@ import gpiod
 
 proc main() =
   try:
-    var chip = Chip.open("/dev/gpiochip0")
+    var chip = openChip("/dev/gpiochip0")
 
     echo chip.getInfo()
 
