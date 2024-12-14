@@ -1,6 +1,6 @@
 # Package
 
-version       = "0.3.0"
+version       = "0.4.0"
 author        = "djazz"
 description   = "Nim wrapper of libgpiod v2"
 license       = "LGPL-2.1-or-later"
