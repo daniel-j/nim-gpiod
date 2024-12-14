@@ -79,6 +79,7 @@ proc setAll*(self: var PhatBeat; p: Pixel; channel: Channel = ChannelBoth) =
     pixel = p
 
 proc setPixel*(self: var PhatBeat; index: int; p: Pixel; channel: Channel = ChannelLeft) =
+  if index < 0 or index >= self.leds.pixels.len: return
   var index = if channel == ChannelRight: index + numChannelPixels else: index
   self.leds.pixels[index] = p
   if channel == ChannelBoth:
@@ -118,10 +119,10 @@ proc readEvents*(self: var PhatBeat): bool =
 # example
 when isMainModule:
   import std/times
-  import std/os
   import std/math
-  # import std/streams
-  # import std/strutils
+  import std/osproc
+  import std/streams
+  import std/strutils
 
   type
     Hsv* = object
@@ -164,55 +165,56 @@ when isMainModule:
     # $ gcc -Wall examples/pw-capture.c -o examples/pw-capture $(pkg-config --cflags --libs libpipewire-0.3) -lm
     # $ examples/pw-capture | nim c -r examples/phat_beat
 
+    let vup = startProcess("examples/pw-capture")
+    let vuf = vup.outputStream()
+
     # var vuf = newFileStream("/dev/stdin")
     # defer: close(vuf)
 
-    # var peaks: array[2, float]
+    var peaks: array[2, float]
 
-    # let green = Pixel(
-    #   g: 255,
-    #   brightness: 1
-    # )
-
-    # var lastUpdate = getTime()
-
-    # while not vuf.atEnd:
-    #   let line = vuf.readLine().split(", ")
-    #   if line.len != 4: continue
-    #   let tv_sec = parseInt(line[0])
-    #   let tv_usec = parseInt(line[1])
-    #   let channel = parseInt(line[2])
-    #   var peak = parseFloat(line[3])
-    #   peak = clamp((20 * log10(peak) + 48) / 48, 0, 1)
-    #   peaks[channel] = max(peak, peaks[channel])
-    #   if channel == 0:
-    #     beat.setBar(peaks[channel], green, ChannelLeft)
-    #   if channel == 1:
-    #     beat.setBar(peaks[channel], green, ChannelRight)
-    #     echo peaks
-    #     let t = initTime(tv_sec, tv_usec * 1_000)
-    #     if t - lastUpdate >= initDuration(milliseconds = 5):
-    #       lastUpdate = getTime()
-    #       echo "update leds"
-    #       beat.show()
-    #       #sleep(300)
-    #   peaks[channel] *= 0.93
+    let green = Pixel(
+      g: 255,
+      brightness: 1
+    )
 
     const SPEED = 50
     const BRIGHTNESS = 0.2
     const SPREAD = 20
 
-    # rainbow
-    while true:
+    var lastUpdate = getTime()
+
+    while not vuf.atEnd:
       if beat.readEvents():
         for event in beat.eventBuffer.items:
           echo event
-      for i in 0..<numPixels:
-        let h = ((getTime().toUnixFloat() * SPEED + (i.float * SPREAD)) mod 360) / 360.0
-        let p = Hsv(h: h, s: 1.0, v: BRIGHTNESS).toPixel()
-        beat.setPixel(i, p)
-      beat.show()
-      sleep(1000 div 30)
+
+      let line = vuf.readLine().split(", ")
+      if line.len != 4: continue
+      let tv_sec = parseInt(line[0])
+      let tv_usec = parseInt(line[1])
+      let channel = parseInt(line[2])
+      var peak = parseFloat(line[3])
+      peak = clamp((20 * log10(peak) + 48) / 48, 0, 1)
+      peaks[channel] = max(peak, peaks[channel])
+      if channel == 0:
+        beat.setBar(peaks[channel], green, ChannelLeft)
+      if channel == 1:
+        beat.setBar(peaks[channel], green, ChannelRight)
+        let t = initTime(tv_sec, tv_usec * 1_000)
+        if t - lastUpdate >= initDuration(milliseconds = 1000 div 30):
+          lastUpdate = getTime()
+          echo "update leds ", peaks
+          if peaks[0] < 0.001 and peaks[1] < 0.001:
+            # rainbow
+            for i in 0..<numPixels:
+              let h = ((getTime().toUnixFloat() * SPEED + (i.float * SPREAD)) mod 360) / 360.0
+              let p = Hsv(h: h, s: 1.0, v: BRIGHTNESS).toPixel()
+              beat.setPixel(i, p)
+          beat.show()
+
+          #sleep(100)
+      peaks[channel] *= 0.93
 
 
   # TODO: listen for SIGINT, to turn off leds before quitting
