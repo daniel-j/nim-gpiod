@@ -4,7 +4,7 @@
 
 import gpiod/devices/apa102
 
-export apa102
+export apa102, edge_event
 
 const
   numChannelPixels* = 8
@@ -25,6 +25,7 @@ const
 type
   PhatBeat* = object
     req*: Request
+    eventBuffer*: EdgeEventBuffer
     leds*: Apa102
 
   Channel* = enum
@@ -42,8 +43,8 @@ proc setup(chip: Chip): Request =
   # buttons
   settings.direction = GPIOD_LINE_DIRECTION_INPUT
   settings.bias = GPIOD_LINE_BIAS_PULL_UP
-  settings.edgeDetection = GPIOD_LINE_EDGE_FALLING
-  settings.debouncePeriod = initDuration(milliseconds = 200)
+  settings.edgeDetection = GPIOD_LINE_EDGE_BOTH
+  settings.debouncePeriod = initDuration(milliseconds = 30)
   lineCfg.addLineSettings(buttons, settings)
 
   var reqCfg = newRequestConfig()
@@ -51,22 +52,11 @@ proc setup(chip: Chip): Request =
 
   return chip.requestLines(reqCfg, lineCfg)
 
-# proc eventThreadFunc(req: Request) {.thread.} =
-#   var eventBuffer = newEdgeEventBuffer(10)
-#   echo "waiting for events"
-#   while true:
-#     let eventPending = req.waitEdgeEvents(initDuration(seconds = 5))
-#     if not eventPending: continue
-#     echo "events!"
-#     let ln = req.readEdgeEvents(eventBuffer, eventBuffer.capacity)
-#     echo (ln, eventBuffer.len)
-#     for i in 0..<eventBuffer.len:
-#       echo eventBuffer[i]
-
 proc initPhatBeat*(): PhatBeat =
   let chip = openChip("/dev/gpiochip0")
   result.leds = initApa102(chip, numPixels, PinDat, PinClk)
   result.req = setup(chip)
+  result.eventBuffer = newEdgeEventBuffer(10)
 
 iterator pixelChannels*(self: var PhatBeat; channel: Channel = ChannelBoth): var Pixel =
   let lowPixel = if channel == ChannelRight: numChannelPixels else: 0
@@ -110,12 +100,16 @@ proc setBar*(self: var PhatBeat; value: float; p: Pixel; channel: Channel = Chan
       discard
     self.setPixel(i, pixel, channel)
 
-
 proc show*(self: PhatBeat) =
   # let st = now()
   self.leds.show()
   # echo "show: ", now() - st
 
+proc readEvents*(self: var PhatBeat): bool =
+  if not self.req.waitEdgeEvents(initDuration(seconds = 0)):
+    return false
+  let ln = self.req.readEdgeEvents(self.eventBuffer, 10)
+  return ln > 0
 
 
 
@@ -204,19 +198,21 @@ when isMainModule:
     #       #sleep(300)
     #   peaks[channel] *= 0.93
 
-
     const SPEED = 50
     const BRIGHTNESS = 0.2
     const SPREAD = 20
 
     # rainbow
     while true:
+      if beat.readEvents():
+        for event in beat.eventBuffer.items:
+          echo event
       for i in 0..<numPixels:
         let h = ((getTime().toUnixFloat() * SPEED + (i.float * SPREAD)) mod 360) / 360.0
         let p = Hsv(h: h, s: 1.0, v: BRIGHTNESS).toPixel()
         beat.setPixel(i, p)
       beat.show()
-      sleep(10)
+      sleep(1000 div 30)
 
 
   # TODO: listen for SIGINT, to turn off leds before quitting
