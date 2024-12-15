@@ -2,30 +2,25 @@ import gpiod
 export gpiod
 
 type
-  Brightness* = range[0.byte .. 31.byte]
+  Brightness* = range[0.uint8 .. 31.uint8]
 
-  Pixel* = object
-    r*: uint8
-    g*: uint8
+  Pixel* {.packed.} = object
+    brightness* {.bitsize: 5.}: Brightness
+    header* {.bitsize: 3.}: uint8
     b*: uint8
-    brightness*: Brightness
-
-  Pixels* = seq[Pixel]
+    g*: uint8
+    r*: uint8
 
   Apa102* = object of RootObj
     datPin: Offset
     clkPin: Offset
     req: Request
-    pixels*: Pixels
+    size: int
+    buffer: seq[Pixel]
 
 const defaultBrightness* = 7.Brightness
 
 proc `=copy`(dest: var Apa102; source: Apa102) {.error.}
-
-proc initPixels(size: int): Pixels =
-  result.setLen(size)
-  for i in 0..<size:
-    result[i].brightness = defaultBrightness
 
 proc setup(self: Apa102; chip: Chip): Request =
   var lineCfg = newLineConfig()
@@ -52,52 +47,52 @@ proc writeByte(self: Apa102; b: byte) =
     self.req.setValue(self.clkPin, GPIOD_LINE_VALUE_INACTIVE)
     dec(i)
 
-proc startFrame(self: Apa102) =
-  self.req.setValue(self.datPin, GPIOD_LINE_VALUE_INACTIVE)
-  for i in 0..<8*4:
-    self.req.setValue(self.clkPin, GPIOD_LINE_VALUE_ACTIVE)
-    self.req.setValue(self.clkPin, GPIOD_LINE_VALUE_INACTIVE)
-
-proc endFrame(self: Apa102) =
-  let count = ((self.pixels.len + 14) div 16) * 8
-  self.req.setValue(self.datPin, GPIOD_LINE_VALUE_INACTIVE)
-  for i in 0..<count:
-    self.req.setValue(self.clkPin, GPIOD_LINE_VALUE_ACTIVE)
-    self.req.setValue(self.clkPin, GPIOD_LINE_VALUE_INACTIVE)
-
+iterator pixels*(self: var Apa102): var Pixel =
+  for i in 0..<self.size:
+    yield self.buffer[i]
 
 proc initApa102*(chip: Chip; size: int; datPin: Offset; clkPin: Offset): Apa102 =
+  result.size = size
   result.datPin = datPin
   result.clkPin = clkPin
-  result.pixels = initPixels(size)
+  result.buffer.setLen(size)
+  for pixel in result.pixels:
+    pixel.header = 0b111
+    pixel.brightness = defaultBrightness
   result.req = result.setup(chip)
 
 proc show*(self: Apa102) =
-  self.startFrame()
+  self.writeByte(0)
+  self.writeByte(0)
+  self.writeByte(0)
+  self.writeByte(0)
+  let buf = cast[ptr UncheckedArray[uint8]](self.buffer[0].unsafeAddr)
+  for i in 0..<self.size*4:
+    self.writeByte(buf[i])
 
-  for pixel in self.pixels:
-    self.writeByte(0b11100000.byte or pixel.brightness)
-    self.writeByte(pixel.b)
-    self.writeByte(pixel.g)
-    self.writeByte(pixel.r)
-
-  self.endFrame()
+  self.writeByte(0)
+  self.writeByte(0)
+  self.writeByte(0)
+  self.writeByte(0)
+  let count = (self.size + 14) div 16
+  for i in 0..<count:
+    self.writeByte(0)
 
 proc setBrightness*(self: var Apa102; brightness: Brightness) =
-  for pixel in self.pixels.mitems:
+  for pixel in self.pixels:
     pixel.brightness = brightness
 
 proc clear*(self: var Apa102) =
-  for pixel in self.pixels.mitems:
+  for pixel in self.pixels:
     pixel.r = 0
     pixel.g = 0
     pixel.b = 0
     pixel.brightness = defaultBrightness
 
 proc setAll*(self: var Apa102; p: Pixel) =
-  for pixel in self.pixels.mitems:
+  for pixel in self.pixels:
     pixel = p
 
 proc setPixel*(self: var Apa102; index: int; p: Pixel) =
-  self.pixels[index] = p
+  copyMem(self.buffer[index].addr, p.unsafeAddr, sizeof(Pixel))
 

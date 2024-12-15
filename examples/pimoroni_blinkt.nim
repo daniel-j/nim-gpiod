@@ -37,6 +37,7 @@ when isMainModule:
     result.g = uint8 round(g * 255.0f)
     result.b = uint8 round(b * 255.0f)
     result.brightness = 1
+    result.header = 0b111
 
   func toPixel*(hsv: Hsv): Pixel =
     ## Converts from HSV to Pixel
@@ -79,7 +80,7 @@ when isMainModule:
         let p = Hsv(h: h, s: 1.0, v: BRIGHTNESS).toPixel()
         blinkt.setPixel(i, p)
       blinkt.show()
-      sleep(10)
+      sleep(1000 div 30)
 
 
   # TODO: listen for SIGINT, to turn off leds before quitting
