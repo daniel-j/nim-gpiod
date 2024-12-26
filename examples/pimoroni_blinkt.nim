@@ -19,14 +19,32 @@ proc initBlinkt*(): Blinkt =
   let chip = openChip("/dev/gpiochip0")
   result = Blinkt(initApa102(chip, numPixels, PinDat, PinClk))
 
+proc setBar*(self: var Blinkt; value: float; p: Pixel) =
+  let midpoint = value * numPixels
+  for i in 0..<numPixels:
+    var pixel = Pixel(header: 0b111)
+    if i < int(midpoint):
+      pixel = p
+    elif i < int(midpoint + 1):
+      pixel = p
+      let level = midpoint - float(int(midpoint))
+      pixel.r = uint8 pixel.r.float * level
+      pixel.g = uint8 pixel.g.float * level
+      pixel.b = uint8 pixel.b.float * level
+    else:
+      discard
+    self.setPixel(i, pixel)
 
 
 # example
 when isMainModule:
 
   import std/times
-  import std/os
   import std/math
+  import std/osproc
+  import std/streams
+  import std/strutils
+
 
   type
     Hsv* = object
@@ -69,19 +87,56 @@ when isMainModule:
     var blinkt = initBlinkt()
     blinkt.show()
 
+    # $ gcc -Wall examples/pw-capture.c -o examples/pw-capture $(pkg-config --cflags --libs libpipewire-0.3) -lm
+    # $ examples/pw-capture | nim c -r examples/phat_beat
+
+    let vup = startProcess("examples/pw-capture")
+    let vuf = vup.outputStream()
+
+    # var vuf = newFileStream("/dev/stdin")
+    # defer: close(vuf)
+
+    var peaks: array[2, float]
+
+    let green = Pixel(
+      g: 255,
+      brightness: 1,
+      header: 0b111
+    )
+
     const SPEED = 50
     const BRIGHTNESS = 0.2
     const SPREAD = 20
 
-    # rainbow
-    while true:
-      for i in 0..<numPixels:
-        let h = ((getTime().toUnixFloat() * SPEED + (i.float * SPREAD)) mod 360) / 360.0
-        let p = Hsv(h: h, s: 1.0, v: BRIGHTNESS).toPixel()
-        blinkt.setPixel(i, p)
-      blinkt.show()
-      sleep(1000 div 30)
+    var lastUpdate = getTime()
+
+    while not vuf.atEnd:
+      let line = vuf.readLine().split(", ")
+      if line.len != 4: continue
+      let tv_sec = parseInt(line[0])
+      let tv_usec = parseInt(line[1])
+      let channel = parseInt(line[2])
+      var peak = parseFloat(line[3])
+      peak = clamp((20 * log10(peak) + 48) / 48, 0, 1)
+      peaks[channel] = max(peak, peaks[channel])
+      if channel == 1:
+        blinkt.setBar(peaks[1], green)
+        let t = initTime(tv_sec, tv_usec * 1_000)
+        if t - lastUpdate >= initDuration(milliseconds = 1000 div 30):
+          lastUpdate = getTime()
+          echo "update leds ", peaks
+          if peaks[0] < 0.001 and peaks[1] < 0.001:
+            # rainbow
+            for i in 0..<numPixels:
+              let h = ((getTime().toUnixFloat() * SPEED + (i.float * SPREAD)) mod 360) / 360.0
+              let p = Hsv(h: h, s: 1.0, v: BRIGHTNESS).toPixel()
+              blinkt.setPixel(i, p)
+          blinkt.show()
+
+          #sleep(100)
+      peaks[channel] *= 0.93
 
 
   # TODO: listen for SIGINT, to turn off leds before quitting
   main()
+
