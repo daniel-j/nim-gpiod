@@ -12,9 +12,9 @@ srcDir        = "src"
 requires "nim >= 1.6.0"
 
 when compiles(taskRequires):
-  taskRequires "futharkgen", "futhark >= 0.13.7"
+  taskRequires "futharkgen", "futhark >= 0.15.0"
 else:
-  requires "futhark >= 0.13.7"
+  requires "futhark >= 0.15.0"
 
 import std/os
 

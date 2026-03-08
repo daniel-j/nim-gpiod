@@ -1,14 +1,6 @@
 import std/strutils
 import std/os
 
-func futharkRenameCallback*(name: string; kind: string; partof: string): string =
-  result = name
-  if kind in ["struct", "anon", "typedef", "enum"] and result.len > 0:
-    removePrefix(result, "struct_")
-    removePrefix(result, "enum_")
-    if result.len > 0:
-      result[0] = result[0].toUpperAscii()
-
 
 const libgpiodPath = currentSourcePath.parentDir / "libgpiod"
 
@@ -21,6 +13,15 @@ when defined(nimcheck) or not defined(futharkgen):
   include ./futhark_libgpiod
 else:
   import futhark
+
+  func futharkRenameCallback*(name: string, kind: SymbolKind, partof: string, overloading: var bool): string =
+    result = name
+    if kind in [Struct, Anon, Typedef, Enum] and result.len > 0:
+      removePrefix(result, "struct_")
+      removePrefix(result, "enum_")
+      if result.len > 0:
+        result[0] = result[0].toUpperAscii()
+
   importc:
     outputPath currentSourcePath.parentDir / "futhark_libgpiod.nim"
 
